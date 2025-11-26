@@ -75,7 +75,7 @@ export function Hero() {
                     <div className="relative lg:block hidden">
                         <div className="relative w-full h-96 rounded-2xl overflow-hidden bg-white/10 p-4 animate-fade-in">
                             <img
-                                src="/images/hero_illustration_1764074855155.png"
+                                src="/images/hero-image.png"
                                 alt="Estimation immobilière avec carte interactive"
                                 className="w-full h-full object-contain rounded-xl animate-float"
                                 loading="eager"

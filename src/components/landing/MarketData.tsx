@@ -25,7 +25,7 @@ export function MarketData() {
                             <div className="relative w-full h-96 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl overflow-hidden">
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <img
-                                        src="/images/market_map_france_1764074979161.png"
+                                        src="/images/market_map_france.png"
                                         alt="Carte des prix immobiliers en France"
                                         className="w-full h-full object-contain animate-pulse"
                                     />

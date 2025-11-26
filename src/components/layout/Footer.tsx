@@ -8,9 +8,9 @@ export function Footer() {
                     <div>
                         <div className="flex items-center mb-4">
                             <img
-                                src="/lovable-uploads/38e9a9bd-2403-4366-af35-74f4b1636bf0.png"
+                                src="/logo texte fond bleu.png"
                                 alt="MonMeilleurBien.fr"
-                                className="h-10"
+                                className="h-12"
                             />
                         </div>
                         <p className="text-gray-300 mb-4">
