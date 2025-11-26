@@ -1,0 +1,99 @@
+import { Phone } from "lucide-react";
+
+export function Footer() {
+    return (
+        <footer className="bg-gradient-to-r from-brand-blue to-brand-dark text-white py-12">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <div className="flex items-center mb-4">
+                            <img
+                                src="/lovable-uploads/38e9a9bd-2403-4366-af35-74f4b1636bf0.png"
+                                alt="MonMeilleurBien.fr"
+                                className="h-10"
+                            />
+                        </div>
+                        <p className="text-gray-300 mb-4">
+                            L'expertise immobilière de confiance pour estimer et vendre votre
+                            bien au meilleur prix.
+                        </p>
+                        <div className="flex items-center">
+                            <Phone className="w-4 h-4 mr-2" />
+                            <span>01 23 45 67 89</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4">Services</h4>
+                        <ul className="space-y-2 text-gray-300">
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Estimation gratuite
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Vente immobilière
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Expertise en ligne
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Accompagnement personnalisé
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4">Informations légales</h4>
+                        <ul className="space-y-2 text-gray-300">
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Mentions légales
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    Politique de confidentialité
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    RGPD
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" className="hover:text-white transition-colors">
+                                    CGU
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-4">Contact</h4>
+                        <div className="text-gray-300 space-y-2">
+                            <p>123 Avenue des Champs-Élysées</p>
+                            <p>75008 Paris</p>
+                            <p>contact@monmeilleurbien.fr</p>
+                            <p>Du lundi au vendredi</p>
+                            <p>9h00 - 18h00</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="border-t border-gray-600 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                    <p className="text-gray-400 text-sm">
+                        © 2024 MonMeilleurBien.fr. Tous droits réservés.
+                    </p>
+                    <div className="flex space-x-4 mt-4 md:mt-0">
+                        <span className="text-gray-400 text-sm">
+                            Agrément préfectoral n° 12345678
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    );
+}
