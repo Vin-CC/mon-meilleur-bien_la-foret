@@ -14,7 +14,7 @@ export function Testimonials() {
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    <div className="rounded-lg border text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
+                    <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
                         <div className="flex items-center mb-4">
                             <img
                                 src="/images/avatar_marie_1764075003105.png"
@@ -38,7 +38,7 @@ export function Testimonials() {
                             annoncée. Service professionnel et réactif."
                         </p>
                     </div>
-                    <div className="rounded-lg border text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
+                    <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
                         <div className="flex items-center mb-4">
                             <img
                                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
@@ -62,7 +62,7 @@ export function Testimonials() {
                             accompagné jusqu'à la vente. Je recommande !"
                         </p>
                     </div>
-                    <div className="rounded-lg border text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
+                    <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
                         <div className="flex items-center mb-4">
                             <img
                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"

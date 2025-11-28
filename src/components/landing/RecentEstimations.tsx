@@ -1,5 +1,6 @@
 "use client";
 
+import { EstimationModal } from "@/components/estimation/EstimationModal";
 import { ArrowDown, ArrowRight, Building2, ChevronLeft, ChevronRight, Home, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -246,10 +247,12 @@ export function RecentEstimations() {
                                 <span className="text-primary text-xl font-bold">
                                     Notre outil d'estimation utilise les données de ventes réelles
                                 </span>
-                                <button className="cursor-pointer justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
-                                    <ArrowRight className="h-4 w-4" />
-                                    Estimer mon bien
-                                </button>
+                                <EstimationModal>
+                                    <button className="cursor-pointer justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
+                                        <ArrowRight className="h-4 w-4" />
+                                        Estimer mon bien
+                                    </button>
+                                </EstimationModal>
                             </div>
                         </div>
                     </div>
