@@ -1,18 +1,17 @@
 "use client";
 
-import { ArrowDown, Building2, ChevronLeft, ChevronRight, Home, MapPin, Maximize } from "lucide-react";
+import { ArrowDown, ArrowRight, Building2, ChevronLeft, ChevronRight, Home, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-const ESTIMATIONS = [
+const BASE_ESTIMATIONS = [
     {
         city: "Reims",
         zip: "51100",
         price: "3 750",
         type: "Appartement",
         area: 60,
-        time: "il y a 5 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955657044.webp",
     },
     {
@@ -21,7 +20,6 @@ const ESTIMATIONS = [
         price: "3 967",
         type: "Appartement",
         area: 30,
-        time: "il y a 10 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955657013.webp",
     },
     {
@@ -30,7 +28,6 @@ const ESTIMATIONS = [
         price: "3 503",
         type: "Appartement",
         area: 151,
-        time: "il y a 15 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656930.webp",
     },
     {
@@ -39,7 +36,6 @@ const ESTIMATIONS = [
         price: "3 595",
         type: "Appartement",
         area: 42,
-        time: "il y a 17 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656837.webp",
     },
     {
@@ -48,7 +44,6 @@ const ESTIMATIONS = [
         price: "3 220",
         type: "Appartement",
         area: 50,
-        time: "il y a 24 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656814.webp",
     },
     {
@@ -57,7 +52,6 @@ const ESTIMATIONS = [
         price: "3 621",
         type: "Appartement",
         area: 87,
-        time: "il y a 28 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656776.webp",
     },
     {
@@ -66,7 +60,6 @@ const ESTIMATIONS = [
         price: "3 500",
         type: "Appartement",
         area: 90,
-        time: "il y a 31 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656817.webp",
     },
     {
@@ -75,7 +68,6 @@ const ESTIMATIONS = [
         price: "4 079",
         type: "Maison",
         area: 89,
-        time: "il y a 35 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656755.webp",
     },
     {
@@ -84,7 +76,6 @@ const ESTIMATIONS = [
         price: "3 368",
         type: "Appartement",
         area: 76,
-        time: "il y a 42 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656773.webp",
     },
     {
@@ -93,7 +84,6 @@ const ESTIMATIONS = [
         price: "3 440",
         type: "Appartement",
         area: 150,
-        time: "il y a 49 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656739.webp",
     },
     {
@@ -102,7 +92,6 @@ const ESTIMATIONS = [
         price: "3 785",
         type: "Appartement",
         area: 65,
-        time: "il y a 51 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656703.webp",
     },
     {
@@ -111,13 +100,47 @@ const ESTIMATIONS = [
         price: "3 881",
         type: "Appartement",
         area: 134,
-        time: "il y a 57 minutes",
         image: "https://images.avest.fr/maps-static-images/65802abe19e9d0d13612f55c/6580408c19e9d0d13612f5d7/1707955656706.webp",
     },
 ];
 
-export function Features() {
+export function RecentEstimations() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [estimations, setEstimations] = useState(BASE_ESTIMATIONS.map(est => ({ ...est, time: "" })));
+
+    useEffect(() => {
+        // Generate random times for all estimations first
+        const estimationsWithTimes = BASE_ESTIMATIONS.map((est) => {
+            const minutes = Math.floor(Math.random() * 59) + 1; // 1-59 minutes
+            return {
+                ...est,
+                minutes, // Keep raw minutes for sorting
+                time: `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`
+            };
+        });
+
+        // Sort by minutes (ascending - most recent first)
+        const sortedEstimations = estimationsWithTimes.sort((a, b) => a.minutes - b.minutes);
+
+        setEstimations(sortedEstimations);
+    }, []);
+
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(true);
+
+    const checkScroll = () => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1); // -1 for rounding tolerance
+        }
+    };
+
+    useEffect(() => {
+        checkScroll();
+        window.addEventListener("resize", checkScroll);
+        return () => window.removeEventListener("resize", checkScroll);
+    }, [estimations]); // Re-check when estimations load
 
     const scroll = (direction: "left" | "right") => {
         if (scrollContainerRef.current) {
@@ -126,6 +149,7 @@ export function Features() {
                 left: direction === "left" ? -scrollAmount : scrollAmount,
                 behavior: "smooth",
             });
+            // checkScroll will be triggered by the onScroll event
         }
     };
 
@@ -146,14 +170,16 @@ export function Features() {
                         <div className="absolute hidden h-[70%] w-full flex-1 items-center justify-between px-3 lg:flex pointer-events-none">
                             <button
                                 onClick={() => scroll("left")}
-                                className="pointer-events-auto hover:bg-foreground/80 text-primary-foreground bg-foreground/30 z-10 flex h-10 w-10 items-center justify-center rounded-full p-0 opacity-0 transition-all duration-300 ease-in-out disabled:!opacity-0 group-hover:enabled:opacity-100"
+                                disabled={!canScrollLeft}
+                                className={`cursor-pointer pointer-events-auto hover:bg-foreground/80 text-primary-foreground bg-foreground/30 z-10 flex h-10 w-10 items-center justify-center rounded-full p-0 transition-all duration-300 ease-in-out disabled:opacity-0 ${!canScrollLeft ? 'opacity-0 cursor-default' : 'opacity-0 group-hover:opacity-100'}`}
                             >
                                 <ChevronLeft className="h-6 w-6" />
                                 <span className="sr-only">Prev</span>
                             </button>
                             <button
                                 onClick={() => scroll("right")}
-                                className="pointer-events-auto hover:bg-foreground/80 text-primary-foreground bg-foreground/30 z-10 flex h-10 w-10 items-center justify-center rounded-full p-0 opacity-0 transition-all duration-300 ease-in-out disabled:!opacity-0 group-hover:enabled:opacity-100"
+                                disabled={!canScrollRight}
+                                className={`cursor-pointer pointer-events-auto hover:bg-foreground/80 text-primary-foreground bg-foreground/30 z-10 flex h-10 w-10 items-center justify-center rounded-full p-0 transition-all duration-300 ease-in-out disabled:opacity-0 ${!canScrollRight ? 'opacity-0 cursor-default' : 'opacity-0 group-hover:opacity-100'}`}
                             >
                                 <ChevronRight className="h-6 w-6" />
                                 <span className="sr-only">Next</span>
@@ -161,15 +187,16 @@ export function Features() {
                         </div>
                         <div
                             ref={scrollContainerRef}
+                            onScroll={checkScroll}
                             className="carousel-container relative z-0 flex w-full touch-pan-x snap-x snap-mandatory gap-2 overflow-x-scroll scroll-smooth py-4 lg:overflow-x-hidden no-scrollbar"
                         >
-                            {ESTIMATIONS.map((est, index) => (
-                                <Link
+                            {estimations.map((est, index) => (
+                                <div
                                     key={index}
-                                    href="/estimation"
+                                    // href="/estimation"
                                     className="contents"
                                 >
-                                    <div className="bg-card text-card-foreground border shadow w-full min-w-[calc(85%-4px)] snap-start rounded sm:min-w-[calc(65%-4px)] md:min-w-[calc(45%-4px)] lg:min-w-[calc(55%-4px)] xl:min-w-[calc(33%-4px)] hover:shadow-lg transition-shadow">
+                                    <div className="bg-card text-card-foreground shadow w-full min-w-[calc(85%-4px)] snap-start rounded sm:min-w-[calc(65%-4px)] md:min-w-[calc(45%-4px)] lg:min-w-[calc(55%-4px)] xl:min-w-[calc(33%-4px)] hover:shadow-lg transition-shadow">
                                         <div className="overflow-hidden p-0">
                                             <div className="relative h-40 w-full overflow-hidden rounded-t">
                                                 <div className="focus:ring-ring inline-flex items-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 text-foreground bg-background border-primary border shadow select-none px-3 py-0.5 text-[13px] absolute right-2 top-2 z-20">
@@ -209,7 +236,7 @@ export function Features() {
                                             </div>
                                         </div>
                                     </div>
-                                </Link>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -219,13 +246,10 @@ export function Features() {
                                 <span className="text-primary text-xl font-bold">
                                     Notre outil d'estimation utilise les données de ventes réelles
                                 </span>
-                                <Link
-                                    href="/estimation"
-                                    className="focus:outline-primary focus-visible:outline-primary inline-flex items-center justify-center gap-3 rounded-md transition-all hover:brightness-95 focus:outline-dashed focus:outline-2 focus:outline-offset-2 focus-visible:outline-dashed focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow h-12 px-8 whitespace-nowrap text-lg font-bold"
-                                >
-                                    <ArrowDown className="h-4 w-4" />
-                                    Estimer en ligne
-                                </Link>
+                                <button className="cursor-pointer justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
+                                    <ArrowRight className="h-4 w-4" />
+                                    Estimer mon bien
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -235,12 +259,6 @@ export function Features() {
                         <span className="text-blue-dark font-medium">
                             + de 10 000 biens estimés chaque mois
                         </span>
-                    </div>
-                    <div className="mt-8">
-                        <button className="justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
-                            Estimer mon bien maintenant
-                            <ArrowDown className="w-5 h-5" />
-                        </button>
                     </div>
                 </div>
             </div>

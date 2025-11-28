@@ -15,7 +15,16 @@
   --color-brand-green: #18cd75;
   --color-brand-dark: #0B2341;
   --color-gold: #E6A502;
-  --color-blue-dark: #1e293b; /* slate-800 */
+  --color-blue-dark: #1e293b;
+  /* slate-800 */
+
+  /* Mappings for copied components */
+  --color-primary: var(--color-brand-blue);
+  --color-primary-foreground: #ffffff;
+  --color-card: #ffffff;
+  --color-card-foreground: var(--color-foreground);
+  --color-muted-foreground: #6b7280;
+  --color-ring: var(--color-brand-blue);
 
   --animate-scroll-partners: scroll-partners 20s linear infinite;
   --animate-fade-in: fade-in 0.5s ease-out;
@@ -24,37 +33,77 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
   @keyframes scroll-partners {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(-50%); }
-    100% { transform: translateX(0); }
+    0% {
+      transform: translateX(0);
+    }
+
+    50% {
+      transform: translateX(-50%);
+    }
+
+    100% {
+      transform: translateX(0);
+    }
   }
+
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
   }
+
   @keyframes accordion-down {
-    from { height: 0; }
-    to { height: var(--radix-accordion-content-height); }
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
   }
+
   @keyframes accordion-up {
-    from { height: var(--radix-accordion-content-height); }
-    to { height: 0; }
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

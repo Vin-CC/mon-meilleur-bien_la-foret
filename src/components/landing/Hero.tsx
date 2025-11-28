@@ -1,4 +1,6 @@
-import { ArrowDown } from "lucide-react";
+"use client";
+
+import { ArrowDown, MapPin, ShieldCheck } from "lucide-react";
 
 export function Hero() {
     return (
@@ -52,9 +54,9 @@ export function Hero() {
                             </p>
                         </div>
                         <div className="space-y-6">
-                            <button className="justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2">
-                                Commencer mon estimation
-                                <ArrowDown className="w-5 h-5" />
+                            <button className="justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2">
+                                Commencer mon estimation<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-arrow-down w-5 h-5" aria-hidden="true">
+                                    <path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
                             </button>
                             <div className="flex flex-wrap gap-6 text-sm">
                                 <div className="flex items-center gap-2">

@@ -1,7 +1,9 @@
 import { Header } from "@/components/layout/Header";
 import { Hero } from "@/components/landing/Hero";
+import { TrustBar } from "@/components/landing/TrustBar";
 import { Features } from "@/components/landing/Features";
 import { AboutUs } from "@/components/landing/AboutUs";
+import { RecentEstimations } from "@/components/landing/RecentEstimations";
 import { MarketData } from "@/components/landing/MarketData";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Partners } from "@/components/landing/Partners";
@@ -16,7 +18,9 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Features />
+        <TrustBar />
+        <RecentEstimations />
+        {/* <Features /> */}
         <AboutUs />
         <MarketData />
         <Testimonials />
