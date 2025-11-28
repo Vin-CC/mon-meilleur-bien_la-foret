@@ -15,6 +15,7 @@ import { useState, useEffect } from "react";
 
 interface EstimationModalProps {
     children: React.ReactNode;
+    defaultAddress?: string;
 }
 
 type PropertyType = "appartement" | "maison" | "terrain" | "autre" | null;
@@ -43,12 +44,12 @@ interface FormData {
     };
 }
 
-export function EstimationModal({ children }: EstimationModalProps) {
+export function EstimationModal({ children, defaultAddress = "" }: EstimationModalProps) {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({
         propertyType: null,
-        address: "",
+        address: defaultAddress,
         surface: "",
         rooms: null,
         bedrooms: null,
@@ -64,6 +65,13 @@ export function EstimationModal({ children }: EstimationModalProps) {
             phone: "",
         },
     });
+
+    // Update address if defaultAddress changes
+    useEffect(() => {
+        if (defaultAddress) {
+            setFormData(prev => ({ ...prev, address: defaultAddress }));
+        }
+    }, [defaultAddress]);
 
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";

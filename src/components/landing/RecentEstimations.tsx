@@ -105,16 +105,26 @@ const BASE_ESTIMATIONS = [
     },
 ];
 
+const CITIES = [
+    { name: "Bordeaux", zip: "33000" },
+    { name: "Paris", zip: "75000" },
+    { name: "Toulouse", zip: "31000" },
+    { name: "Lyon", zip: "69000" },
+];
+
 export function RecentEstimations() {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [estimations, setEstimations] = useState(BASE_ESTIMATIONS.map(est => ({ ...est, time: "" })));
 
     useEffect(() => {
-        // Generate random times for all estimations first
+        // Generate random times and cities for all estimations first
         const estimationsWithTimes = BASE_ESTIMATIONS.map((est) => {
             const minutes = Math.floor(Math.random() * 59) + 1; // 1-59 minutes
+            const randomCity = CITIES[Math.floor(Math.random() * CITIES.length)];
             return {
                 ...est,
+                city: randomCity.name,
+                zip: randomCity.zip,
                 minutes, // Keep raw minutes for sorting
                 time: `il y a ${minutes} minute${minutes > 1 ? 's' : ''}`
             };

@@ -1,10 +1,15 @@
 "use client";
 
 import { EstimationModal } from "@/components/estimation/EstimationModal";
-import { ArrowDown, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowDown, ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
+import { useState } from "react";
+import { Button } from "../ui/button";
+
 export function Hero() {
+    const [address, setAddress] = useState("");
+
     return (
         <section className="relative bg-gradient-to-r from-brand-blue to-brand-dark text-white min-h-screen flex items-center overflow-hidden border-0">
             <div className="absolute inset-0 overflow-hidden">
@@ -56,11 +61,23 @@ export function Hero() {
                             </p>
                         </div>
                         <div className="space-y-6">
-                            <EstimationModal>
-                                <button className="inline-flex justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg items-center gap-2">
-                                    Commencer mon estimation<ArrowDown className="w-5 h-5" />
-                                </button>
-                            </EstimationModal>
+                            <div className="bg-white p-2 rounded-xl shadow-lg max-w-xl flex flex-col md:flex-row gap-2">
+                                <div className="flex-1 relative flex items-center">
+                                    <MapPin className="absolute left-3 text-gray-400 w-5 h-5" />
+                                    <input
+                                        type="text"
+                                        placeholder="Entrez votre adresse..."
+                                        className="w-full pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none rounded-lg"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                    />
+                                </div>
+                                <EstimationModal defaultAddress={address}>
+                                    <Button className="h-12 md:h-auto px-6 py-3 text-lg w-full md:w-auto">
+                                        Estimer <ArrowRight className="w-5 h-5" />
+                                    </Button>
+                                </EstimationModal>
+                            </div>
                             <div className="flex flex-wrap gap-6 text-sm">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-brand-green rounded-full"></div>
