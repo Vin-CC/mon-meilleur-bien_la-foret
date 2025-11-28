@@ -5,6 +5,7 @@ import { Features } from "@/components/landing/Features";
 import { AboutUs } from "@/components/landing/AboutUs";
 import { RecentEstimations } from "@/components/landing/RecentEstimations";
 import { MarketData } from "@/components/landing/MarketData";
+import { CallToAction } from "@/components/landing/CallToAction";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Partners } from "@/components/landing/Partners";
 import { FAQ } from "@/components/landing/FAQ";
@@ -19,10 +20,11 @@ export default function Home() {
       <main>
         <Hero />
         <TrustBar />
+        <AboutUs />
+        <CallToAction />
+        <MarketData />
         <RecentEstimations />
         {/* <Features /> */}
-        <AboutUs />
-        <MarketData />
         <Testimonials />
         <Partners />
         <FAQ />

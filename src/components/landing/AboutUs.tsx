@@ -14,9 +14,9 @@ export function AboutUs() {
                                     </h2>
                                 </div>
                                 <p className="whitespace-pre-wrap leading-7 text-gray-700">
-                                    Située au cœur du centre ville de REIMS, votre Agence ORPI REIMS, forte de son appartenance au réseau immobilier N°1 ORPI, vous propose les métiers de la transaction, de la location, de la gestion et de l'immobilier d’entreprise dans la ville de Reims et ses alentours.
+                                    Mon Meilleur Bien est votre outil d'estimation en ligne et comparateur d'agences immobilières.
                                     <br /><br />
-                                    Profitez également de nos services dans les zones de Fismes, Cormicy, Cormontreuil et Tinqueux, grâce à nos conseillers spécialement dédiés à ces secteurs.
+                                    Notre objectif est de vous aider à sélectionner la meilleure agence de votre secteur pour maximiser vos chances de vendre rapidement et au meilleur prix.
                                 </p>
                             </div>
                             <a
