@@ -14,9 +14,11 @@ export function AboutUs() {
                                     </h2>
                                 </div>
                                 <p className="whitespace-pre-wrap leading-7 text-gray-700">
-                                    Mon Meilleur Bien est votre outil d'estimation en ligne et comparateur d'agences immobilières.
+                                    Mon Meilleur Bien est un service en ligne innovant conçu pour accompagner tous les propriétaires dans leur projet de vente immobilière. Grâce à notre estimateur intelligent et à notre comparateur d’agences immobilières, nous analysons les performances des professionnels de votre secteur afin d’identifier l’agence la plus qualifiée pour vendre votre bien rapidement et au meilleur prix.
                                     <br /><br />
-                                    Notre objectif est de vous aider à sélectionner la meilleure agence de votre secteur pour maximiser vos chances de vendre rapidement et au meilleur prix.
+                                    Notre mission : vous offrir une vision claire, fiable et objective du marché local, tout en vous orientant vers les partenaires les plus performants pour maximiser la réussite de votre vente.
+                                    <br /><br />
+                                    En quelques clics, profitez d'une estimation précise, comparez les agences autour de vous, et laissez-nous vous guider vers la meilleure stratégie de vente selon vos besoins et votre localisation.
                                 </p>
                             </div>
                             <a

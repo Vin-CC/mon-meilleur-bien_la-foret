@@ -51,22 +51,42 @@ export function Footer() {
                         <h4 className="font-semibold mb-4">Informations légales</h4>
                         <ul className="space-y-2 text-gray-300">
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a
+                                    href="https://artech-group.fr/mentions-legales"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white transition-colors"
+                                >
                                     Mentions légales
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a
+                                    href="https://artech-group.fr/politique-de-confidentialite"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white transition-colors"
+                                >
                                     Politique de confidentialité
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a
+                                    href="https://artech-group.fr/rgpd"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white transition-colors"
+                                >
                                     RGPD
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
+                                <a
+                                    href="https://artech-group.fr/cgu"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="hover:text-white transition-colors"
+                                >
                                     CGU
                                 </a>
                             </li>
@@ -89,7 +109,15 @@ export function Footer() {
                     </p>
                     <div className="flex space-x-4 mt-4 md:mt-0">
                         <span className="text-gray-400 text-sm">
-                            Agrément préfectoral n° 12345678
+                            Développé par{" "}
+                            <a
+                                href="https://www.artech-group.fr"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-white transition-colors"
+                            >
+                                Artech
+                            </a>
                         </span>
                     </div>
                 </div>

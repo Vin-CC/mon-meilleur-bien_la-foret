@@ -11,7 +11,6 @@ import { Partners } from "@/components/landing/Partners";
 import { FAQ } from "@/components/landing/FAQ";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/layout/Footer";
-import { Phone } from "lucide-react";
 
 export default function Home() {
   return (

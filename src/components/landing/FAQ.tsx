@@ -123,6 +123,23 @@ export function FAQ() {
                                 scrupuleusement la réglementation RGPD.
                             </AccordionContent>
                         </AccordionItem>
+                        <AccordionItem>
+                            <AccordionTrigger
+                                isOpen={openItem === "item-7"}
+                                onToggle={() => toggleItem("item-7")}
+                            >
+                                Puis-je obtenir une estimation plus précise en personne ?
+                            </AccordionTrigger>
+                            <AccordionContent isOpen={openItem === "item-7"}>
+                                Oui, si vous souhaitez une estimation plus précise, nous vous
+                                recommandons de prendre rendez-vous en cliquant sur{" "}
+                                <a href="#" className="underline">
+                                    ce lien
+                                </a>
+                                . Un agent se chargera d'effectuer une évaluation plus détaillée
+                                de votre bien.
+                            </AccordionContent>
+                        </AccordionItem>
                     </Accordion>
                 </div>
             </div>
