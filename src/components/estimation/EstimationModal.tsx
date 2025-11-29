@@ -44,6 +44,20 @@ interface FormData {
     };
 }
 
+interface AddressSuggestion {
+    label: string;
+    score: number;
+    id: string;
+    type: string;
+    name: string;
+    postcode: string;
+    citycode: string;
+    city: string;
+    context: string;
+    importance: number;
+    street: string;
+}
+
 export function EstimationModal({ children, defaultAddress = "" }: EstimationModalProps) {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
@@ -65,6 +79,40 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             phone: "",
         },
     });
+    const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const fetchAddressSuggestions = async (query: string) => {
+        if (query.length < 3) {
+            setSuggestions([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`);
+            const data = await response.json();
+            setSuggestions(data.features.map((f: any) => ({
+                ...f.properties,
+                id: f.properties.id || Math.random().toString()
+            })));
+            setShowSuggestions(true);
+        } catch (error) {
+            console.error("Error fetching address suggestions:", error);
+            setSuggestions([]);
+        }
+    };
+
+    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        updateFormData("address", value);
+        fetchAddressSuggestions(value);
+    };
+
+    const handleSelectAddress = (suggestion: AddressSuggestion) => {
+        updateFormData("address", suggestion.label);
+        setSuggestions([]);
+        setShowSuggestions(false);
+    };
 
     // Update address if defaultAddress changes
     useEffect(() => {
@@ -265,9 +313,9 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             setFormData(prev => ({ ...prev, propertyType: item.id as PropertyType }));
                             setTimeout(() => setStep(2), 0);
                         }}
-                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-left group ${formData.propertyType === item.id ? "border-brand-blue bg-blue-50" : "border-gray-100"}`}
+                        className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-left group ${formData.propertyType === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                     >
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${formData.propertyType === item.id ? "bg-brand-blue text-white" : "bg-gray-100 text-gray-500 group-hover:bg-brand-blue group-hover:text-white"}`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${formData.propertyType === item.id ? "bg-brand-green text-white" : "bg-gray-100 text-gray-500 group-hover:bg-brand-green group-hover:text-white"}`}>
                             <item.icon className="w-6 h-6" />
                         </div>
                         <div>
@@ -285,14 +333,37 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             <h3 className="text-xl font-semibold text-center text-blue-dark">
                 Où se situe le bien ?
             </h3>
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto relative">
                 <Input
                     placeholder="Entrez l'adresse complète"
                     value={formData.address}
-                    onChange={(e) => updateFormData("address", e.target.value)}
+                    onChange={handleAddressChange}
                     className="h-12 text-lg"
                     autoFocus
+                    onBlur={() => {
+                        // Delay hiding suggestions to allow clicking on them
+                        setTimeout(() => setShowSuggestions(false), 200);
+                    }}
+                    onFocus={() => {
+                        if (formData.address.length >= 3) {
+                            setShowSuggestions(true);
+                        }
+                    }}
                 />
+                {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                        {suggestions.map((suggestion) => (
+                            <button
+                                key={suggestion.id}
+                                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                                onClick={() => handleSelectAddress(suggestion)}
+                            >
+                                <p className="font-medium text-gray-900">{suggestion.label}</p>
+                                <p className="text-xs text-gray-500">{suggestion.context}</p>
+                            </button>
+                        ))}
+                    </div>
+                )}
                 <p className="text-sm text-muted-foreground mt-2 text-center">
                     Nous avons besoin de l'adresse exacte pour une estimation précise.
                 </p>
@@ -343,7 +414,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("rooms", item.num);
                             handleNext();
                         }}
-                        className={`h-20 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 flex flex-col items-center justify-center ${formData.rooms === item.num ? "bg-brand-blue text-white border-brand-blue" : "border-gray-200 text-gray-700 bg-white"}`}
+                        className={`h-20 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 flex flex-col items-center justify-center ${formData.rooms === item.num ? "bg-brand-green text-white border-brand-green" : "border-gray-200 text-gray-700 bg-white"}`}
                     >
                         <span className="text-2xl font-bold">{item.num}{item.suffix || ""}</span>
                         <span className="text-xs">{item.label}</span>
@@ -373,7 +444,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("bedrooms", item.num);
                             handleNext();
                         }}
-                        className={`h-20 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 flex flex-col items-center justify-center ${formData.bedrooms === item.num ? "bg-brand-blue text-white border-brand-blue" : "border-gray-200 text-gray-700 bg-white"}`}
+                        className={`h-20 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 flex flex-col items-center justify-center ${formData.bedrooms === item.num ? "bg-brand-green text-white border-brand-green" : "border-gray-200 text-gray-700 bg-white"}`}
                     >
                         <span className="text-2xl font-bold">{item.num}{item.suffix || ""}</span>
                         <span className="text-xs">{item.label}</span>
@@ -401,7 +472,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("condition", item.id);
                             handleNext();
                         }}
-                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-left ${formData.condition === item.id ? "border-brand-blue bg-blue-50" : "border-gray-100"}`}
+                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-left ${formData.condition === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                     >
                         <span className="block font-semibold text-gray-900 text-lg">{item.label}</span>
                         <span className="text-sm text-gray-500">{item.sub}</span>
@@ -431,7 +502,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("floor", item.val);
                             handleNext();
                         }}
-                        className={`h-16 rounded-xl border-2 text-lg font-semibold transition-all hover:border-brand-blue hover:bg-blue-50 hover:text-brand-blue ${formData.floor === item.val ? "bg-brand-blue text-white border-brand-blue" : "border-gray-200 text-gray-700 bg-white"}`}
+                        className={`h-16 rounded-xl border-2 text-lg font-semibold transition-all hover:border-brand-green hover:bg-brand-green/5 hover:text-brand-green ${formData.floor === item.val ? "bg-brand-green text-white border-brand-green" : "border-gray-200 text-gray-700 bg-white"}`}
                     >
                         {item.label}
                     </button>
@@ -458,7 +529,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("exterior", item.id);
                             handleNext();
                         }}
-                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-center ${formData.exterior === item.id ? "border-brand-blue bg-blue-50" : "border-gray-100"}`}
+                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.exterior === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                     >
                         <span className="block font-semibold text-gray-900 text-lg">{item.label}</span>
                     </button>
@@ -496,7 +567,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         updateFormData("isOwner", "proprietaire");
                         handleNext();
                     }}
-                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-center ${formData.isOwner === "proprietaire" ? "border-brand-blue bg-blue-50" : "border-gray-100"}`}
+                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.isOwner === "proprietaire" ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                 >
                     <span className="block font-semibold text-gray-900 text-xl">Oui</span>
                     <span className="text-sm text-gray-500">Je suis propriétaire</span>
@@ -506,7 +577,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         updateFormData("isOwner", "locataire");
                         handleNext();
                     }}
-                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-center ${formData.isOwner === "locataire" ? "border-brand-blue bg-blue-50" : "border-gray-100"}`}
+                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.isOwner === "locataire" ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                 >
                     <span className="block font-semibold text-gray-900 text-xl">Non</span>
                     <span className="text-sm text-gray-500">Je suis locataire / Autre</span>
@@ -533,7 +604,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             updateFormData("projectTimeline", item.id);
                             handleNext();
                         }}
-                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-blue hover:bg-blue-50 text-center ${formData.projectTimeline === item.id ? "border-brand-blue bg-blue-50" : "border-gray-100 bg-white"}`}
+                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.projectTimeline === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100 bg-white"}`}
                     >
                         <span className="block font-semibold text-gray-900 text-base">{item.label}</span>
                     </button>
@@ -617,7 +688,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                             </DialogTitle>
                         </div>
                         <div className="space-y-2">
-                            <Progress value={progress} className="h-2" />
+                            <Progress value={progress} className="h-2 [&>[data-slot=progress-indicator]]:bg-brand-green" />
                             <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}% terminé</p>
                         </div>
                     </DialogHeader>
@@ -641,7 +712,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         )}
                         <Button
                             onClick={handleNext}
-                            className="bg-brand-blue hover:bg-blue-800 text-white px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={!isStepValid()}
                         >
                             {step === TOTAL_STEPS ? "Envoyer le code SMS" : "Suivant"}

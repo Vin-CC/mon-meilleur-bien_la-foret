@@ -52,9 +52,7 @@ export function Footer() {
                         <ul className="space-y-2 text-gray-300">
                             <li>
                                 <a
-                                    href="https://artech-group.fr/mentions-legales"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    href="/mentions-legales"
                                     className="hover:text-white transition-colors"
                                 >
                                     Mentions légales
@@ -62,9 +60,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <a
-                                    href="https://artech-group.fr/politique-de-confidentialite"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    href="/politique-de-confidentialite"
                                     className="hover:text-white transition-colors"
                                 >
                                     Politique de confidentialité
@@ -72,9 +68,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <a
-                                    href="https://artech-group.fr/rgpd"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    href="/rgpd"
                                     className="hover:text-white transition-colors"
                                 >
                                     RGPD
@@ -82,9 +76,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <a
-                                    href="https://artech-group.fr/cgu"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                    href="/cgu"
                                     className="hover:text-white transition-colors"
                                 >
                                     CGU
@@ -95,11 +87,7 @@ export function Footer() {
                     <div>
                         <h4 className="font-semibold mb-4">Contact</h4>
                         <div className="text-gray-300 space-y-2">
-                            <p>123 Avenue des Champs-Élysées</p>
-                            <p>75008 Paris</p>
                             <p>contact@monmeilleurbien.fr</p>
-                            <p>Du lundi au vendredi</p>
-                            <p>9h00 - 18h00</p>
                         </div>
                     </div>
                 </div>
