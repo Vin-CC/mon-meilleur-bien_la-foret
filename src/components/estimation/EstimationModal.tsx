@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Building2, Check, Home, MapPin, Warehouse } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 
 interface EstimationModalProps {
     children: React.ReactNode;
@@ -44,23 +45,22 @@ interface FormData {
     };
 }
 
-interface AddressSuggestion {
-    label: string;
-    score: number;
-    id: string;
-    type: string;
-    name: string;
-    postcode: string;
-    citycode: string;
-    city: string;
-    context: string;
-    importance: number;
-    street: string;
-}
+
 
 export function EstimationModal({ children, defaultAddress = "" }: EstimationModalProps) {
     const [open, setOpen] = useState(false);
     const [step, setStep] = useState(1);
+
+    const {
+        address,
+        setAddress,
+        suggestions,
+        showSuggestions,
+        setShowSuggestions,
+        handleAddressChange,
+        handleSelectAddress,
+    } = useAddressAutocomplete(defaultAddress);
+
     const [formData, setFormData] = useState<FormData>({
         propertyType: null,
         address: defaultAddress,
@@ -79,47 +79,22 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             phone: "",
         },
     });
-    const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const fetchAddressSuggestions = async (query: string) => {
-        if (query.length < 3) {
-            setSuggestions([]);
-            return;
-        }
-
-        try {
-            const response = await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`);
-            const data = await response.json();
-            setSuggestions(data.features.map((f: any) => ({
-                ...f.properties,
-                id: f.properties.id || Math.random().toString()
-            })));
-            setShowSuggestions(true);
-        } catch (error) {
-            console.error("Error fetching address suggestions:", error);
-            setSuggestions([]);
-        }
-    };
-
-    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        updateFormData("address", value);
-        fetchAddressSuggestions(value);
-    };
-
-    const handleSelectAddress = (suggestion: AddressSuggestion) => {
-        updateFormData("address", suggestion.label);
-        setSuggestions([]);
-        setShowSuggestions(false);
-    };
+    // Sync address from hook to formData
+    useEffect(() => {
+        setFormData(prev => ({ ...prev, address }));
+    }, [address]);
 
     // Update address if defaultAddress changes
     useEffect(() => {
         if (defaultAddress) {
-            setFormData(prev => ({ ...prev, address: defaultAddress }));
+            setAddress(defaultAddress);
+            // If we have a valid address and we're on step 2, skip to step 3
+            if (defaultAddress.length > 5 && step === 2) {
+                setStep(3);
+            }
         }
-    }, [defaultAddress]);
+    }, [defaultAddress, step, setAddress]);
 
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
@@ -300,18 +275,10 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         key={item.id}
                         onClick={() => {
                             updateFormData("propertyType", item.id);
-                            // We can't auto-advance here because we need to recalculate TOTAL_STEPS
-                            // But since setStep is async, it's fine, the next render will handle it.
-                            // Actually, better to just set it and let user click next or auto-next.
-                            // For type selection, auto-next is nice.
-                            // We need to ensure state update happens before next step logic if we relied on it immediately,
-                            // but handleNext uses current 'step' state, so it's fine.
-                            // However, isApartment is derived from formData.propertyType.
-                            // So we should probably wait for the update.
-                            // For simplicity, let's just update and let the effect handle it or just call handleNext.
-                            // Since handleNext just increments step, and render logic checks isApartment, it should work.
+                            // If address is already filled, skip to step 3
+                            const hasValidAddress = formData.address.length > 5;
                             setFormData(prev => ({ ...prev, propertyType: item.id as PropertyType }));
-                            setTimeout(() => setStep(2), 0);
+                            setTimeout(() => setStep(hasValidAddress ? 3 : 2), 0);
                         }}
                         className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-left group ${formData.propertyType === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                     >

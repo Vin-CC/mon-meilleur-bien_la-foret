@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Button } from "../ui/button";
 
 export function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,13 +91,14 @@ export function ContactForm() {
                     className="mt-1 min-h-[100px] bg-white"
                 />
             </div>
-            <button
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 w-full text-white py-3 font-semibold bg-brand-green hover:bg-brand-green/90"
+            <Button
+                // className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 w-full text-white py-3 font-semibold bg-brand-green hover:bg-brand-green/90"
+                className="w-full"
                 type="submit"
                 disabled={isSubmitting}
             >
                 {isSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
-            </button>
+            </Button>
         </form>
     );
 }

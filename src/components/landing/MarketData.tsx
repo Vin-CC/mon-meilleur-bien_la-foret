@@ -2,8 +2,9 @@ import {
     ChartNoAxesColumnIncreasing,
     TrendingUp,
     MapPin,
-    ArrowDown,
+    ArrowRight,
 } from "lucide-react";
+import { EstimationModal } from "@/components/estimation/EstimationModal";
 
 export function MarketData() {
     return (
@@ -112,10 +113,12 @@ export function MarketData() {
                                         <span>Données certifiées</span>
                                     </div>
                                 </div>
-                                <button className="justify-center whitespace-nowrap text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-white text-brand-blue hover:bg-gray-100 px-6 py-3 font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2">
-                                    Obtenir mon estimation
-                                    <ArrowDown className="w-4 h-4" />
-                                </button>
+                                <EstimationModal>
+                                    <button className="justify-center whitespace-nowrap text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-white text-brand-blue hover:bg-gray-100 px-6 py-3 font-semibold rounded-lg transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2">
+                                        Obtenir mon estimation
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </EstimationModal>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-6 mt-8">

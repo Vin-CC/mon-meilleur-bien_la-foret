@@ -6,9 +6,17 @@ import Link from "next/link";
 
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 
 export function Hero() {
-    const [address, setAddress] = useState("");
+    const {
+        address,
+        suggestions,
+        showSuggestions,
+        setShowSuggestions,
+        handleAddressChange,
+        handleSelectAddress,
+    } = useAddressAutocomplete();
 
     return (
         <section className="relative bg-gradient-to-r from-brand-blue to-brand-dark text-white min-h-screen flex items-center overflow-hidden border-0">
@@ -69,8 +77,30 @@ export function Hero() {
                                         placeholder="Entrez votre adresse..."
                                         className="w-full pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none rounded-lg"
                                         value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
+                                        onChange={handleAddressChange}
+                                        onBlur={() => {
+                                            setTimeout(() => setShowSuggestions(false), 200);
+                                        }}
+                                        onFocus={() => {
+                                            if (address.length >= 3) {
+                                                setShowSuggestions(true);
+                                            }
+                                        }}
                                     />
+                                    {showSuggestions && suggestions.length > 0 && (
+                                        <div className="absolute z-10 w-full mt-1 top-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto">
+                                            {suggestions.map((suggestion) => (
+                                                <button
+                                                    key={suggestion.id}
+                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                                                    onClick={() => handleSelectAddress(suggestion)}
+                                                >
+                                                    <p className="font-medium text-gray-900">{suggestion.label}</p>
+                                                    <p className="text-xs text-gray-500">{suggestion.context}</p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                                 <EstimationModal defaultAddress={address}>
                                     <Button className="h-12 md:h-auto px-6 py-3 text-lg w-full md:w-auto">

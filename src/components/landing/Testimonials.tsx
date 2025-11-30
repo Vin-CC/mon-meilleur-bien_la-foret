@@ -1,4 +1,5 @@
-import { ArrowDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { EstimationModal } from "@/components/estimation/EstimationModal";
 
 export function Testimonials() {
     return (
@@ -112,10 +113,12 @@ export function Testimonials() {
                         </div>
                     </div>
                     <div className="mt-8">
-                        <button className="justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto px-[20px]">
-                            Rejoignez nos clients satisfaits
-                            <ArrowDown className="w-5 h-5" />
-                        </button>
+                        <EstimationModal>
+                            <button className="justify-center whitespace-nowrap ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 bg-brand-green hover:bg-brand-green/90 text-white py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-lg flex items-center gap-2 mx-auto px-[20px]">
+                                Rejoignez nos clients satisfaits
+                                <ArrowRight className="w-5 h-5" />
+                            </button>
+                        </EstimationModal>
                     </div>
                 </div>
             </div>
