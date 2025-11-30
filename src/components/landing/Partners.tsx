@@ -1,3 +1,30 @@
+const partners = [
+    {
+        name: "Orpi",
+        image: "/partners/orpi.png",
+    },
+    {
+        name: "La foret",
+        image: "/partners/laforet.webp",
+    },
+    {
+        name: "Century 21",
+        image: "/partners/century21.png",
+    },
+    {
+        name: "Era",
+        image: "/partners/era.png",
+    },
+    {
+        name: "Sixieme Avenue",
+        image: "/partners/sixiemeavenue.svg",
+    },
+    {
+        name: "Artech",
+        image: "/partners/artech.png",
+    },
+]
+
 export function Partners() {
     return (
         <section className="py-12 bg-white border-t border-gray-100">
@@ -9,123 +36,20 @@ export function Partners() {
                 </div>
                 <div className="relative overflow-hidden">
                     <div className="flex animate-scroll-partners hover:[animation-play-state:paused]">
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner1.png"
-                                    alt="Notaires de France"
-                                    className="max-h-full max-w-full object-contain"
-                                />
+                        {[...partners, ...partners].map((partner, id) => (
+                            <div key={id} className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
+                                <div className="h-16 mb-4 flex items-center justify-center">
+                                    <img
+                                        src={partner.image}
+                                        alt={partner.name}
+                                        className="max-h-full max-w-full object-contain"
+                                    />
+                                </div>
+                                <div className="text-xs text-gray-600 font-medium">
+                                    {partner.name}
+                                </div>
                             </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Notaires de France
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner2.png"
-                                    alt="FNAIM"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">FNAIM</div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner3.png"
-                                    alt="Crédit Agricole"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Crédit Agricole
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner4.png"
-                                    alt="Société Générale"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Société Générale
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner5.png"
-                                    alt="BNP Paribas"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                BNP Paribas
-                            </div>
-                        </div>
-                        {/* Duplicated for infinite scroll effect */}
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner1.png"
-                                    alt="Notaires de France"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Notaires de France
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner2.png"
-                                    alt="FNAIM"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">FNAIM</div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner3.png"
-                                    alt="Crédit Agricole"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Crédit Agricole
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner4.png"
-                                    alt="Société Générale"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                Société Générale
-                            </div>
-                        </div>
-                        <div className="flex-shrink-0 w-48 text-center p-4 hover:bg-gray-50 rounded-lg transition-colors mx-4">
-                            <div className="h-16 mb-4 flex items-center justify-center">
-                                <img
-                                    src="/partners/partner5.png"
-                                    alt="BNP Paribas"
-                                    className="max-h-full max-w-full object-contain"
-                                />
-                            </div>
-                            <div className="text-xs text-gray-600 font-medium">
-                                BNP Paribas
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
                 <div className="text-center mt-8">
