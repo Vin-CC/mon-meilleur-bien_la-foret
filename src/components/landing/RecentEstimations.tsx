@@ -117,10 +117,11 @@ export function RecentEstimations() {
     const [estimations, setEstimations] = useState(BASE_ESTIMATIONS.map(est => ({ ...est, time: "" })));
 
     useEffect(() => {
-        // Generate random times and cities for all estimations first
+        // Generate random times and cities for all estimations
         const estimationsWithTimes = BASE_ESTIMATIONS.map((est) => {
             const minutes = Math.floor(Math.random() * 59) + 1; // 1-59 minutes
             const randomCity = CITIES[Math.floor(Math.random() * CITIES.length)];
+
             return {
                 ...est,
                 city: randomCity.name,
@@ -132,6 +133,19 @@ export function RecentEstimations() {
 
         // Sort by minutes (ascending - most recent first)
         const sortedEstimations = estimationsWithTimes.sort((a, b) => a.minutes - b.minutes);
+
+        // Now ensure no two consecutive estimations have the same city (AFTER sorting)
+        for (let i = 1; i < sortedEstimations.length; i++) {
+            if (sortedEstimations[i].city === sortedEstimations[i - 1].city) {
+                // Find a different city
+                const availableCities = CITIES.filter(city => city.name !== sortedEstimations[i - 1].city);
+                if (availableCities.length > 0) {
+                    const newCity = availableCities[Math.floor(Math.random() * availableCities.length)];
+                    sortedEstimations[i].city = newCity.name;
+                    sortedEstimations[i].zip = newCity.zip;
+                }
+            }
+        }
 
         setEstimations(sortedEstimations);
     }, []);

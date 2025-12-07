@@ -22,7 +22,8 @@ interface EstimationModalProps {
 type PropertyType = "appartement" | "maison" | "terrain" | "autre" | null;
 type ProjectType = "vente" | "location" | "curiosite" | null;
 type Condition = "refait-a-neuf" | "bon-etat" | "rafraichissement" | "renovation" | null;
-type Exterior = "balcon" | "terrasse" | "jardin" | "pas-d-exterieur" | null;
+type Exterior = "balcon" | "terrasse" | "jardin" | "pas-d-exterieur";
+type ExteriorSelection = Exterior[] | null;
 type Ownership = "proprietaire" | "locataire" | null;
 type ProjectTimeline = "immediat" | "3-mois" | "6-mois" | "indefini" | null;
 
@@ -34,7 +35,7 @@ interface FormData {
     bedrooms: number | null;
     condition: Condition;
     floor: number | null;
-    exterior: Exterior;
+    exterior: ExteriorSelection;
     constructionYear: string;
     isOwner: Ownership;
     projectTimeline: ProjectTimeline;
@@ -95,6 +96,29 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             }
         }
     }, [defaultAddress, step, setAddress]);
+
+    // Reset modal content when closed
+    useEffect(() => {
+        if (!open) {
+            // Reset to initial state when modal is closed
+            setStep(1);
+            setFormData({
+                propertyType: null,
+                address: "",
+                surface: "",
+                rooms: null,
+                bedrooms: null,
+                condition: null,
+                floor: null,
+                exterior: null,
+                constructionYear: "",
+                isOwner: null,
+                projectTimeline: null,
+                contact: { name: "", email: "", phone: "" },
+            });
+            setAddress("");
+        }
+    }, [open, setAddress]);
 
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
@@ -231,7 +255,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 case 5: return formData.bedrooms !== null;
                 case 6: return !!formData.condition;
                 case 7: return formData.floor !== null;
-                case 8: return !!formData.exterior;
+                case 8: return !!formData.exterior && formData.exterior.length > 0;
                 case 9: return formData.constructionYear.length === 4 && !isNaN(Number(formData.constructionYear));
                 case 10: return !!formData.isOwner;
                 case 11: return !!formData.projectTimeline;
@@ -247,7 +271,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 case 4: return formData.rooms !== null;
                 case 5: return formData.bedrooms !== null;
                 case 6: return !!formData.condition;
-                case 7: return !!formData.exterior;
+                case 7: return !!formData.exterior && formData.exterior.length > 0;
                 case 8: return formData.constructionYear.length === 4 && !isNaN(Number(formData.constructionYear));
                 case 9: return !!formData.isOwner;
                 case 10: return !!formData.projectTimeline;
@@ -478,32 +502,66 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         </div>
     );
 
-    const renderStep8_Exterior = () => (
-        <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-center text-blue-dark">
-                Le bien dispose-t-il d'un extérieur ?
-            </h3>
-            <div className="grid grid-cols-1 gap-3">
-                {[
-                    { id: "balcon", label: "Balcon" },
-                    { id: "terrasse", label: "Terrasse" },
-                    { id: "jardin", label: "Jardin" },
-                    { id: "pas-d-exterieur", label: "Pas d'extérieur" },
-                ].map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => {
-                            updateFormData("exterior", item.id);
-                            handleNext();
-                        }}
-                        className={`p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.exterior === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
-                    >
-                        <span className="block font-semibold text-gray-900 text-lg">{item.label}</span>
-                    </button>
-                ))}
+    const renderStep8_Exterior = () => {
+        const handleExteriorToggle = (id: Exterior) => {
+            const currentSelection = formData.exterior || [];
+
+            // Si "Pas d'extérieur" est sélectionné, on le désélectionne et on le remplace par le nouveau choix
+            if (id === "pas-d-exterieur") {
+                updateFormData("exterior", [id]);
+            } else if (currentSelection.includes("pas-d-exterieur")) {
+                // Si on clique sur une option alors que "Pas d'extérieur" est sélectionné, on le remplace
+                updateFormData("exterior", [id]);
+            } else if (currentSelection.includes(id)) {
+                // Désélectionner l'élément
+                const newSelection = currentSelection.filter((item) => item !== id);
+                updateFormData("exterior", newSelection.length > 0 ? newSelection : null);
+            } else if (currentSelection.length < 3) {
+                // Ajouter l'élément si on n'a pas encore 3 sélections (fix rapide, avant c'était 2 et on a 3 options qui peuvent être mises ensemble)
+                updateFormData("exterior", [...currentSelection, id]);
+            }
+        };
+
+        const isSelected = (id: Exterior) => {
+            return formData.exterior?.includes(id) || false;
+        };
+
+        const canSelect = (id: Exterior) => {
+            const currentSelection = formData.exterior || [];
+            return isSelected(id) || currentSelection.length < 3 || id === "pas-d-exterieur";
+        };
+
+        return (
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-center text-blue-dark">
+                    Le bien dispose-t-il d'un extérieur ?
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                    {[
+                        { id: "balcon" as Exterior, label: "Balcon" },
+                        { id: "terrasse" as Exterior, label: "Terrasse" },
+                        { id: "jardin" as Exterior, label: "Jardin" },
+                        { id: "pas-d-exterieur" as Exterior, label: "Pas d'extérieur" },
+                    ].map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => handleExteriorToggle(item.id)}
+                            disabled={!canSelect(item.id)}
+                            className={`p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center relative ${isSelected(item.id)
+                                ? "border-brand-green bg-brand-green/10"
+                                : "border-gray-100"
+                                } ${!canSelect(item.id) ? "opacity-50 cursor-not-allowed" : ""}`}
+                        >
+                            <span className="block font-semibold text-gray-900 text-lg">{item.label}</span>
+                            {isSelected(item.id) && (
+                                <Check className="w-5 h-5 text-brand-green absolute top-4 right-4" />
+                            )}
+                        </button>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const renderStep9_Year = () => (
         <div className="space-y-6">
@@ -563,6 +621,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                     { id: "3-mois", label: "De 3 Mois" },
                     { id: "3-6-mois", label: "Entre 3 et 6 Mois" },
                     { id: "6-12-mois", label: "Entre 6 et 12 Mois" },
+                    { id: "+12-mois", label: "Plus de 12 Mois" },
                     { id: "curiosite", label: "Juste Curiosité" },
                 ].map((item) => (
                     <button

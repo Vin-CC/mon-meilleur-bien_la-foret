@@ -1,4 +1,4 @@
-import { Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 
 export function Footer() {
     return (
@@ -18,8 +18,8 @@ export function Footer() {
                             bien au meilleur prix.
                         </p>
                         <div className="flex items-center">
-                            <Phone className="w-4 h-4 mr-2" />
-                            <span>01 23 45 67 89</span>
+                            <Mail className="w-4 h-4 mr-2" />
+                            <span>contact@monmeilleurbien.fr</span>
                         </div>
                     </div>
                     <div>
