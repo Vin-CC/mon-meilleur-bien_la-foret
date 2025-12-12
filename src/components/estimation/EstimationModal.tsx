@@ -29,9 +29,13 @@ import { useState, useEffect, ForwardRefExoticComponent, RefAttributes } from "r
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Calendar } from "@/components/ui/calendar";
+import { fr } from "date-fns/locale";
+import { format } from "date-fns";
 
 interface EstimationModalProps {
     children: React.ReactNode;
+
     defaultAddress?: string;
 }
 
@@ -159,8 +163,9 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     }, [resendCooldown]);
 
     // Calculate total steps dynamically based on property type
+    // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
-    const TOTAL_STEPS = isApartment ? 13 : 12;
+    const TOTAL_STEPS = isApartment ? 12 : 11;
 
     const progress = (step / TOTAL_STEPS) * 100;
 
@@ -904,6 +909,8 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         );
     };
 
+
+
     const renderStep12_Contact = () => (
         <div className="space-y-6">
             <h3 className="text-xl font-semibold text-center text-blue-dark">
@@ -1043,6 +1050,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 isOwner: null,
                 projectTimeline: null,
                 contact: { name: "", email: "", phone: "" },
+
             });
             setPhoneStep("phoneInput");
             setOtpCode("");

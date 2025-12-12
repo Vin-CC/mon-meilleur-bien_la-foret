@@ -1,5 +1,6 @@
 import { Calendar } from "lucide-react";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 export function CallToAction() {
     return (
@@ -11,12 +12,14 @@ export function CallToAction() {
                 Rendez-vous gratuit | Dossier d'estimation détaillé OFFERT | Agent immobilier expert du quartier
             </p>
             <div className="w-full flex justify-center px-4">
-                <Button>
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
-                    <span className="flex-1 text-center">
-                        Prendre rendez-vous
-                    </span>
-                </Button>
+                <Link href="/rendez-vous">
+                    <Button>
+                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-1 text-center">
+                            Prendre rendez-vous
+                        </span>
+                    </Button>
+                </Link>
             </div>
         </div>
     );

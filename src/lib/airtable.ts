@@ -33,3 +33,10 @@ export function getOtpTableName(): string {
 export function getLeadsTableName(): string {
     return process.env.AIRTABLE_TABLE_LEADS || 'Leads';
 }
+
+/**
+ * Get the name of the RDV table from environment variables
+ */
+export function getRdvTableName(): string {
+    return process.env.AIRTABLE_TABLE_RDV || 'RDV';
+}
