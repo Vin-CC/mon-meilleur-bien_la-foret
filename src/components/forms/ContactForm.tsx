@@ -14,12 +14,36 @@ export function ContactForm() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate form submission
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const formData = new FormData(e.currentTarget);
+        const payload = {
+            nom: (formData.get("nom") as string || "").trim(),
+            prenom: (formData.get("prenom") as string || "").trim(),
+            email: (formData.get("email") as string || "").trim(),
+            telephone: (formData.get("telephone") as string || "").trim(),
+            message: (formData.get("message") as string || "").trim(),
+        };
 
-        toast.success("Votre demande a bien été envoyée !");
-        setIsSubmitting(false);
-        (e.target as HTMLFormElement).reset();
+        try {
+            const response = await fetch("/api/questions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Envoi impossible pour le moment.");
+            }
+
+            toast.success("Votre demande a bien été envoyée !");
+            (e.target as HTMLFormElement).reset();
+        } catch (error: any) {
+            console.error("Error submitting question:", error);
+            toast.error(error.message || "Erreur lors de l'envoi. Réessayez.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (

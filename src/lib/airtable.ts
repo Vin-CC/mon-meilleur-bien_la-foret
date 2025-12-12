@@ -40,3 +40,10 @@ export function getLeadsTableName(): string {
 export function getRdvTableName(): string {
     return process.env.AIRTABLE_TABLE_RDV || 'RDV';
 }
+
+/**
+ * Get the name of the Questions table from environment variables
+ */
+export function getQuestionTableName(): string {
+    return process.env.AIRTABLE_TABLE_QUESTION || 'Questions';
+}
