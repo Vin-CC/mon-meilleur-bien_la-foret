@@ -163,7 +163,13 @@ export function AppointmentWizard() {
                     }}
                     locale={fr}
                     className="border-0"
-                    disabled={(date) => date < new Date() || date.getDay() === 0}
+                    disabled={(date) => {
+                        const today = new Date();
+                        const minDate = new Date(today);
+                        minDate.setDate(today.getDate() + 3);
+                        minDate.setHours(0, 0, 0, 0);
+                        return date < minDate || date.getDay() === 0;
+                    }}
                 />
             </div>
         </div>
@@ -210,7 +216,7 @@ export function AppointmentWizard() {
                                 }}
                                 className={`w-full p-4 rounded-lg transition-all text-center font-medium ${formData.appointmentTime === time
                                     ? "bg-brand-green/20 text-brand-green border border-brand-green"
-                                    : "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-transparent"
+                                    : "bg-green-50 text-green-600 hover:bg-green-100 border border-transparent"
                                     }`}
                             >
                                 {time}
@@ -284,7 +290,7 @@ export function AppointmentWizard() {
                     <Button
                         onClick={handleNext}
                         disabled={!formData.address}
-                        className="bg-blue-400 hover:bg-blue-500 text-white px-16 h-12 text-base rounded-lg"
+                        className="bg-green-400 hover:bg-green-500 text-white px-16 h-12 text-base rounded-lg"
                     >
                         Valider
                     </Button>

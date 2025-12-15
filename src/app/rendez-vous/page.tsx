@@ -18,7 +18,7 @@ export default function AppointmentPage() {
         <div className="min-h-screen bg-white flex flex-col">
             {/* Progress Bar */}
             <div className="w-full h-1 bg-gray-200">
-                <div className="h-full bg-gradient-to-r from-blue-600 to-blue-400" style={{ width: '33%' }}></div>
+                <div className="h-full bg-gradient-to-r from-green-600 to-green-400" style={{ width: '33%' }}></div>
             </div>
 
             <Header />
@@ -34,7 +34,7 @@ export default function AppointmentPage() {
 
                             <div className="space-y-4 mt-8">
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mt-0.5">
                                         <CheckCircle2 className="w-4 h-4 text-white" />
                                     </div>
                                     <p className="text-gray-700 text-[15px]">
@@ -43,7 +43,7 @@ export default function AppointmentPage() {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mt-0.5">
                                         <CheckCircle2 className="w-4 h-4 text-white" />
                                     </div>
                                     <p className="text-gray-700 text-[15px]">
@@ -52,7 +52,7 @@ export default function AppointmentPage() {
                                 </div>
 
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center mt-0.5">
+                                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center mt-0.5">
                                         <CheckCircle2 className="w-4 h-4 text-white" />
                                     </div>
                                     <p className="text-gray-700 text-[15px]">
