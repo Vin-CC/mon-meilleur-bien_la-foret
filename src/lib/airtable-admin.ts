@@ -80,7 +80,7 @@ export async function listTables(): Promise<AirtableTable[]> {
                 { id: 'fldCode', name: 'Code', type: 'singleLineText' },
                 { id: 'fldExpiresAt', name: 'ExpiresAt', type: 'dateTime' },
                 { id: 'fldStatus', name: 'Status', type: 'singleSelect' },
-                { id: 'fldCreatedAt', name: 'CreatedAt', type: 'dateTime' }
+                { id: 'fldCreatedAt', name: 'Created At', type: 'dateTime' }
             ]
         },
         {
@@ -152,9 +152,9 @@ export async function getTableRecords(tableName: string): Promise<AirtableRecord
                 createdTime: record._rawJson.createdTime || new Date().toISOString(),
             }));
 
-        } catch (retryError) {
+        } catch (retryError: any) {
             console.error(`Retry failed for table ${tableName}:`, retryError);
-            throw new Error(`Failed to fetch records for table ${tableName}`);
+            throw new Error(`Failed to fetch records for table ${tableName}: ${retryError.message || retryError}`);
         }
     }
 }

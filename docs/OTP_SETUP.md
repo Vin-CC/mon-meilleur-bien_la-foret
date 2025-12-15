@@ -21,7 +21,7 @@
 | Code | Single line text | - |
 | ExpiresAt | Date | Include time |
 | Status | Single select | Options: active, used, expired |
-| CreatedAt | Date | Include time |
+| Created At | Date | Include time |
 
 #### Table: `Leads`
 | Field Name | Field Type | Options |

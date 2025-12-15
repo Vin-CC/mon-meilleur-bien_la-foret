@@ -11,6 +11,7 @@ export async function sendSms(to: string, body: string): Promise<string> {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+    const processId = process.env.TWILIO_VERIFY_SERVICE_SID
 
     if (!accountSid) {
         throw new Error('TWILIO_ACCOUNT_SID environment variable is not set');
@@ -20,18 +21,28 @@ export async function sendSms(to: string, body: string): Promise<string> {
         throw new Error('TWILIO_AUTH_TOKEN environment variable is not set');
     }
 
-    if (!fromNumber) {
-        throw new Error('TWILIO_PHONE_NUMBER environment variable is not set');
+    // if (!fromNumber) {
+    //     throw new Error('TWILIO_PHONE_NUMBER environment variable is not set');
+    // }
+
+    if (!processId) {
+        throw new Error('TWILIO_VERIFY_SERVICE_SID environment variable is not set');
     }
 
     try {
         const client = twilio(accountSid, authToken);
 
-        const message = await client.messages.create({
-            body,
-            from: fromNumber,
-            to,
-        });
+        const message = await client.verify.v2.services(processId)
+            .verifications
+            .create({
+                to,
+                channel: 'sms'
+            })
+        // const message = await client.messages.create({
+        //     body,
+        //     from: fromNumber,
+        //     to,
+        // });
 
         console.log(`SMS sent successfully to ${to}, SID: ${message.sid}`);
         return message.sid;

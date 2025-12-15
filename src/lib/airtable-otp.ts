@@ -7,10 +7,10 @@ import { getAirtableBase, getOtpTableName, getLeadsTableName } from './airtable'
 export interface OtpRecord {
     id: string;
     phone: string;
-    code: string;
+    code: string; // ⚠️ idéalement: stocker un hash, pas le code en clair
     expiresAt: string; // ISO 8601 date string
     status: 'active' | 'used' | 'expired';
-    createdAt?: string;
+    "Created At"?: string;
 }
 
 export interface LeadData {
@@ -37,6 +37,31 @@ export interface LeadData {
 }
 
 // ============================================================================
+// Helpers
+// ============================================================================
+
+function escapeAirtableFormulaString(value: string): string {
+    // Airtable string literals are wrapped in single quotes.
+    // We escape ' by doubling it.
+    return String(value ?? '').replace(/'/g, "''");
+}
+
+/**
+ * Normalisation basique FR.
+ * Idéal: libphonenumber-js + stockage E.164 partout.
+ */
+export function normalizePhone(input: string): string {
+    const raw = (input ?? '').trim().replace(/[\s().-]/g, '');
+    if (!raw) return '';
+    if (raw.startsWith('+')) return raw;
+
+    if (/^0[67]\d{8}$/.test(raw)) return `+33${raw.slice(1)}`;
+    if (/^33[67]\d{8}$/.test(raw)) return `+${raw}`;
+
+    return raw;
+}
+
+// ============================================================================
 // OTP Operations
 // ============================================================================
 
@@ -55,11 +80,11 @@ export async function createOtpRecord(params: {
         await base(tableName).create([
             {
                 fields: {
-                    Phone: params.phone,
+                    Phone: normalizePhone(params.phone),
                     Code: params.code,
-                    ExpiresAt: params.expiresAt,
+                    'Expires At': params.expiresAt,
                     Status: 'active',
-                    CreatedAt: new Date().toISOString(),
+                    'Created At': new Date().toISOString(),
                 },
             },
         ]);
@@ -70,35 +95,39 @@ export async function createOtpRecord(params: {
 }
 
 /**
- * Find an active OTP for a phone number
+ * Find the most recent active & non-expired OTP for a phone number.
+ * (Renvoie null si inexistant ou expiré)
  */
-export async function findActiveOtpByPhone(
-    phone: string
-): Promise<OtpRecord | null> {
+export async function findActiveOtpByPhone(phone: string): Promise<OtpRecord | null> {
     const base = getAirtableBase();
     const tableName = getOtpTableName();
 
+    const normalizedPhone = normalizePhone(phone);
+    const phoneEsc = escapeAirtableFormulaString(normalizedPhone);
+
     try {
+        const nowIso = new Date().toISOString();
+
         const records = await base(tableName)
             .select({
-                filterByFormula: `AND({Phone} = '${phone}', {Status} = 'active')`,
+                filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active', {Expires At} > '${nowIso}')`,
                 maxRecords: 1,
-                sort: [{ field: 'CreatedAt', direction: 'desc' }],
+                sort: [{ field: 'Created At', direction: 'desc' }],
             })
             .firstPage();
 
-        if (records.length === 0) {
-            return null;
-        }
+        if (records.length === 0) return null;
 
         const record = records[0];
+
         return {
             id: record.id,
-            phone: record.get('Phone') as string,
+            phone: (record.get('Phone') as string) ?? normalizedPhone,
             code: record.get('Code') as string,
-            expiresAt: record.get('ExpiresAt') as string,
+            // ✅ fix: field name must match Airtable column
+            expiresAt: record.get('Expires At') as string,
             status: record.get('Status') as 'active' | 'used' | 'expired',
-            createdAt: record.get('CreatedAt') as string | undefined,
+            "Created At": record.get('Created At') as string | undefined,
         };
     } catch (error) {
         console.error('Error finding active OTP:', error);
@@ -129,33 +158,89 @@ export async function markOtpAsUsed(id: string): Promise<void> {
 }
 
 /**
- * Expire all active OTPs for a phone number
+ * Mark an OTP as expired
+ */
+export async function markOtpAsExpired(id: string): Promise<void> {
+    const base = getAirtableBase();
+    const tableName = getOtpTableName();
+
+    try {
+        await base(tableName).update([
+            {
+                id,
+                fields: {
+                    Status: 'expired',
+                },
+            },
+        ]);
+    } catch (error) {
+        console.error('Error marking OTP as expired:', error);
+        throw new Error('Failed to mark OTP as expired');
+    }
+}
+
+/**
+ * Expire all active OTPs for a phone number (cleanup)
  */
 export async function expireOldOtpsForPhone(phone: string): Promise<void> {
     const base = getAirtableBase();
     const tableName = getOtpTableName();
 
+    const normalizedPhone = normalizePhone(phone);
+    const phoneEsc = escapeAirtableFormulaString(normalizedPhone);
+
     try {
         const records = await base(tableName)
             .select({
-                filterByFormula: `AND({Phone} = '${phone}', {Status} = 'active')`,
+                filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active')`,
             })
             .firstPage();
 
-        if (records.length > 0) {
-            const updates = records.map((record) => ({
-                id: record.id,
-                fields: {
-                    Status: 'expired',
-                },
-            }));
+        if (records.length === 0) return;
 
-            await base(tableName).update(updates);
-        }
+        const updates = records.map((record) => ({
+            id: record.id,
+            fields: { Status: 'expired' },
+        }));
+
+        await base(tableName).update(updates);
     } catch (error) {
         console.error('Error expiring old OTPs:', error);
-        // Don't throw - this is a cleanup operation
+        // cleanup best effort
     }
+}
+
+/**
+ * Consume OTP if valid (best possible with Airtable):
+ * - fetch most recent active + non-expired
+ * - compare code
+ * - update to used
+ * - re-read to ensure status changed (minimise race)
+ */
+export async function consumeOtpIfValid(params: {
+    phone: string;
+    code: string;
+}): Promise<{ ok: true } | { ok: false; reason: 'invalid_or_expired' }> {
+    const normalizedPhone = normalizePhone(params.phone);
+    const otp = await findActiveOtpByPhone(normalizedPhone);
+
+    if (!otp) return { ok: false, reason: 'invalid_or_expired' };
+    if (otp.code !== params.code) return { ok: false, reason: 'invalid_or_expired' };
+
+    await markOtpAsUsed(otp.id);
+
+    // Re-check (Airtable isn't transactional, but this catches some races)
+    try {
+        const base = getAirtableBase();
+        const tableName = getOtpTableName();
+        const reread = await base(tableName).find(otp.id);
+        const status = reread.get('Status') as string;
+        if (status !== 'used') return { ok: false, reason: 'invalid_or_expired' };
+    } catch {
+        // if reread fails, we still consider it consumed since update succeeded
+    }
+
+    return { ok: true };
 }
 
 // ============================================================================
@@ -172,19 +257,19 @@ async function findLeadByPhoneOrEmail(
     const base = getAirtableBase();
     const tableName = getLeadsTableName();
 
+    const phoneNorm = normalizePhone(phone);
+    const phoneEsc = escapeAirtableFormulaString(phoneNorm);
+    const emailEsc = escapeAirtableFormulaString(email);
+
     try {
-        // Use 'Tel' and 'Email' columns
         const records = await base(tableName)
             .select({
-                filterByFormula: `OR({Tel} = '${phone}', {Email} = '${email}')`,
+                filterByFormula: `OR({Tel}='${phoneEsc}', {Email}='${emailEsc}')`,
                 maxRecords: 1,
             })
             .firstPage();
 
-        if (records.length === 0) {
-            return null;
-        }
-
+        if (records.length === 0) return null;
         return { id: records[0].id };
     } catch (error) {
         console.error('Error finding lead:', error);
@@ -200,27 +285,30 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
     const tableName = getLeadsTableName();
 
     try {
-        // Check if lead already exists
-        const existingLead = await findLeadByPhoneOrEmail(data.phone, data.email);
+        const phone = normalizePhone(data.phone);
+
+        const existingLead = await findLeadByPhoneOrEmail(phone, data.email);
 
         const fields: Record<string, any> = {
             'Nom & Prénom': `${data.firstName} ${data.lastName}`.trim(),
             Email: data.email,
-            Tel: data.phone,
-            // 'PhoneVerified': data.phoneVerified ?? false, // Column missing in provided list
+            Tel: phone,
+            // PhoneVerified: data.phoneVerified ?? false, // si la colonne existe
         };
 
-        if (data.sourceMedia) {
-            fields['Source Media'] = data.sourceMedia;
-        }
-        if (data.sourceUtm) {
-            fields['Source UTM'] = data.sourceUtm;
-        }
+        if (data.sourceMedia) fields['Source Media'] = data.sourceMedia;
+        if (data.sourceUtm) fields['Source UTM'] = data.sourceUtm;
 
-        // Add estimation data if provided
         if (data.estimationData) {
             if (data.estimationData.propertyType) {
-                fields['Type de bien'] = data.estimationData.propertyType;
+                // Map property type to Airtable format (Capitalized)
+                const typeMap: Record<string, string> = {
+                    'appartement': 'Appartement',
+                    'maison': 'Maison',
+                    'terrain': 'Terrain',
+                    'autre': 'Autre'
+                };
+                fields['Type de bien'] = typeMap[data.estimationData.propertyType] || data.estimationData.propertyType;
             }
             if (data.estimationData.address) {
                 fields['Adresse complète du Bien'] = data.estimationData.address;
@@ -228,99 +316,83 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             if (data.estimationData.surface) {
                 fields['Superficie'] = data.estimationData.surface;
             }
-            // Rooms and Bedrooms not in the provided list explicitly but might be useful to keep or map if possible.
-            // Assuming they might not be needed or mapped to something else.
-            // If they are not in the list, I should probably omit them or check if they map to something.
-            // The list has: ID, Date d'arrivée, Date de relance, Status, Nom & Prénom, Tel, Email, Adresse complète du Bien, Type de bien, Superficie, Propriétaires , Vendeur, Délai de vente, Etats du Bien, Exterieure, Historique , Date RDV Estimation, ⁠CA Potentiel, Date signature mandat, Date vente, CA Généré, Agent responsable , email du responsable, Source Media, Source UTM, Nurturing, Created Time
-            // Rooms/Bedrooms are NOT in the list. I will comment them out for now to be safe.
-
-            // if (data.estimationData.rooms !== undefined) {
-            //     fields.Rooms = data.estimationData.rooms;
-            // }
-            // if (data.estimationData.bedrooms !== undefined) {
-            //     fields.Bedrooms = data.estimationData.bedrooms;
-            // }
-
             if (data.estimationData.condition) {
-                fields['Etats du Bien'] = data.estimationData.condition;
+                // Map condition to Airtable format
+                const conditionMap: Record<string, string> = {
+                    'neuf': 'Neuf / Refait à neuf',
+                    'bon-etat': 'Bon état',
+                    'rafraichissement': 'À rafraîchir',
+                    'renovation': 'À rénover'
+                };
+                fields['Etats du Bien'] = conditionMap[data.estimationData.condition] || data.estimationData.condition;
             }
-            // Floor not in list
-            // if (data.estimationData.floor !== undefined) {
-            //     fields.Floor = data.estimationData.floor;
-            // }
-            if (data.estimationData.exterior && data.estimationData.exterior.length > 0) {
-                // Filter out any empty strings just in case
-                const validExterior = data.estimationData.exterior.filter(e => e && e.trim() !== '');
-                if (validExterior.length > 0) {
-                    fields['Exterieure'] = validExterior;
+            if (data.estimationData.exterior?.length) {
+                const validExterior = data.estimationData.exterior.filter((e) => e && e.trim() !== '');
+                if (validExterior.length) {
+                    // Map exterior options if needed (usually capitalized in Airtable)
+                    const exteriorMap: Record<string, string> = {
+                        'balcon': 'Balcon',
+                        'terrasse': 'Terrasse',
+                        'jardin': 'Jardin',
+                        "pas-d-exterieur": "Pas d'extérieur"
+                    };
+                    fields['Exterieure'] = validExterior.map(e => exteriorMap[e.toLowerCase()] || e);
                 }
             }
-            // ConstructionYear not in list
-            // if (data.estimationData.constructionYear) {
-            //     fields.ConstructionYear = data.estimationData.constructionYear;
-            // }
             if (data.estimationData.isOwner) {
-                fields['Propriétaires '] = data.estimationData.isOwner; // Note the space
+                // Map owner status
+                const ownerMap: Record<string, string> = {
+                    'proprietaire': 'Propriétaire',
+                    'locataire': 'Locataire'
+                };
+                fields['Propriétaires '] = ownerMap[data.estimationData.isOwner] || data.estimationData.isOwner; // oui, avec espace
             }
             if (data.estimationData.projectTimeline) {
-                fields['Délai de vente'] = data.estimationData.projectTimeline;
+                // Map timeline
+                const timelineMap: Record<string, string> = {
+                    '3-mois': 'De 3 Mois',
+                    '3-6-mois': 'Entre 3 et 6 Mois',
+                    '6-12-mois': 'Entre 6 et 12 Mois',
+                    '+12-mois': 'Plus de 12 Mois',
+                    'curiosite': 'Juste Curiosité'
+                };
+                fields['Délai de vente'] = timelineMap[data.estimationData.projectTimeline] || data.estimationData.projectTimeline;
             }
         }
-
-        console.log('Sending fields to Airtable:', JSON.stringify(fields, null, 2));
 
         if (existingLead) {
-            // Update existing lead
-            await base(tableName).update([
-                {
-                    id: existingLead.id,
-                    fields,
-                },
-            ]);
-        } else {
-            // Create new lead
-            let status: string | undefined;
-
-            try {
-                // Dynamically fetch valid status options to avoid errors
-                const { listTables } = await import('./airtable-admin');
-                const tables = await listTables();
-                const leadsTable = tables.find(t => t.name === tableName);
-                const statusField = leadsTable?.fields?.find(f => f.name === 'Status');
-
-                if (statusField?.options?.choices && statusField.options.choices.length > 0) {
-                    // Try to find "Nouveau" or "New" case-insensitive
-                    const targetStatus = statusField.options.choices.find(c =>
-                        c.name.toLowerCase() === 'nouveau' ||
-                        c.name.toLowerCase() === 'new'
-                    );
-
-                    if (targetStatus) {
-                        status = targetStatus.name;
-                    } else {
-                        // If "Nouveau" not found, take the first available option (often "To Treat" or similar)
-                        status = statusField.options.choices[0].name;
-                    }
-                }
-            } catch (schemaError) {
-                console.warn('Failed to fetch schema for Status field, using default:', schemaError);
-            }
-
-            const createFields: Record<string, any> = {
-                ...fields,
-                "Date d'arrivée": new Date().toISOString().split('T')[0], // Set arrival date
-            };
-
-            if (status) {
-                createFields.Status = status;
-            }
-
-            await base(tableName).create([
-                {
-                    fields: createFields,
-                },
-            ]);
+            await base(tableName).update([{ id: existingLead.id, fields }]);
+            return;
         }
+
+        // Create new lead
+        let status: string | undefined;
+
+        try {
+            const { listTables } = await import('./airtable-admin');
+            const tables = await listTables();
+            const leadsTable = tables.find((t) => t.name === tableName);
+            const statusField = leadsTable?.fields?.find((f) => f.name === 'Status');
+
+            const choices = statusField?.options?.choices;
+            if (choices?.length) {
+                const target = choices.find(
+                    (c) => c.name.toLowerCase() === 'nouveau' || c.name.toLowerCase() === 'new'
+                );
+                status = (target ?? choices[0]).name;
+            }
+        } catch (schemaError) {
+            console.warn('Failed to fetch schema for Status field, using default:', schemaError);
+        }
+
+        const createFields: Record<string, any> = {
+            ...fields,
+            "Date d'arrivée": new Date().toISOString().split('T')[0],
+        };
+
+        if (status) createFields.Status = status;
+
+        await base(tableName).create([{ fields: createFields }]);
     } catch (error) {
         console.error('Error creating/updating lead:', error);
         throw new Error('Failed to create or update lead');
@@ -329,35 +401,31 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
 
 /**
  * Mark a phone number as verified for a lead
+ * (best effort — active seulement si tu as une colonne dédiée)
  */
 export async function markPhoneAsVerified(phone: string): Promise<void> {
     const base = getAirtableBase();
     const tableName = getLeadsTableName();
 
+    const phoneNorm = normalizePhone(phone);
+    const phoneEsc = escapeAirtableFormulaString(phoneNorm);
+
     try {
         const records = await base(tableName)
             .select({
-                filterByFormula: `{Tel} = '${phone}'`,
+                filterByFormula: `{Tel}='${phoneEsc}'`,
                 maxRecords: 1,
             })
             .firstPage();
 
-        if (records.length > 0) {
-            // Column 'PhoneVerified' is missing, so we can't update it.
-            // We might want to log this or maybe there's another status to update?
-            // For now, I'll just comment it out to prevent errors.
-            /*
-            await base(tableName).update([
-                {
-                    id: records[0].id,
-                    fields: {
-                        PhoneVerified: true,
-                    },
-                },
-            ]);
-            */
-            console.log(`Phone verified for ${phone} (No column to update)`);
-        }
+        if (records.length === 0) return;
+
+        // ⚠️ Active seulement si la colonne existe
+        // await base(tableName).update([
+        //   { id: records[0].id, fields: { PhoneVerified: true } },
+        // ]);
+
+        console.log(`Phone verified for ${phoneNorm} (no column updated)`);
     } catch (error) {
         console.error('Error marking phone as verified:', error);
         throw new Error('Failed to mark phone as verified');

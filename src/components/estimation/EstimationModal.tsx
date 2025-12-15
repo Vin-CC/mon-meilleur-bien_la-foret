@@ -165,7 +165,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     // Calculate total steps dynamically based on property type
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
-    const TOTAL_STEPS = isApartment ? 12 : 11;
+    const TOTAL_STEPS = isApartment ? 13 : 12;
 
     const progress = (step / TOTAL_STEPS) * 100;
 

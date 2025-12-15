@@ -5,11 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     ArrowLeft,
-    CheckCircle2,
-    Calendar as CalendarIcon,
-    Clock,
-    MapPin,
-    User,
     Mail,
     Phone
 } from "lucide-react";
@@ -392,63 +387,35 @@ export function AppointmentWizard() {
 
     const renderStep_Confirmation = () => {
         const formattedDate = formData.appointmentDate
-            ? format(formData.appointmentDate, "EEEE d MMMM", { locale: fr })
+            ? format(formData.appointmentDate, "EEEE d MMMM yyyy", { locale: fr })
             : "";
 
         return (
-            <div className="border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
-                <div className="px-6 py-8 text-center space-y-4">
-                    <div className="w-16 h-16 rounded-full bg-brand-green/10 text-brand-green mx-auto flex items-center justify-center">
-                        <CheckCircle2 className="w-10 h-10" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                        Rendez-vous confirmé
-                    </h3>
-                    <p className="text-gray-600 max-w-md mx-auto">
-                        Nous avons bien enregistré votre demande. Un expert vous contactera pour confirmer les derniers détails.
-                    </p>
-                </div>
+            <div className="border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">
+                    Confirmation de votre rendez-vous
+                </h3>
 
-                <div className="px-6 pb-8 space-y-4">
-                    <div className="grid grid-cols-1 gap-3">
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 text-blue-700">
-                            <CalendarIcon className="w-5 h-5" />
-                            <div>
-                                <p className="text-xs uppercase tracking-wide">Date</p>
-                                <p className="font-semibold">{formattedDate}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 text-blue-700">
-                            <Clock className="w-5 h-5" />
-                            <div>
-                                <p className="text-xs uppercase tracking-wide">Heure</p>
-                                <p className="font-semibold">{formData.appointmentTime}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 text-blue-700">
-                            <MapPin className="w-5 h-5 mt-1" />
-                            <div>
-                                <p className="text-xs uppercase tracking-wide">Adresse du bien</p>
-                                <p className="font-semibold leading-snug">{formData.address}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 text-blue-700">
-                            <User className="w-5 h-5 mt-1" />
-                            <div className="space-y-1">
-                                <div className="font-semibold">
-                                    {formData.contact.firstName} {formData.contact.name}
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Mail className="w-4 h-4" />
-                                    <span>{formData.contact.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <Phone className="w-4 h-4" />
-                                    <span>{formData.contact.phone}</span>
-                                </div>
-                            </div>
-                        </div>
+                <div className="space-y-6 text-gray-900">
+                    <p>
+                        Votre demande de rendez-vous d'estimation a bien été prise en compte.
+                    </p>
+
+                    <div className="space-y-2">
+                        <p>
+                            <span className="font-bold">Date :</span> Le {formattedDate} à {formData.appointmentTime}
+                        </p>
+                        <p>
+                            <span className="font-bold">Adresse :</span> {formData.address}
+                        </p>
+                        <p>
+                            <span className="font-bold">Numéro de téléphone :</span> {formData.contact.phone}
+                        </p>
                     </div>
+
+                    <p>
+                        Nous allons vous contacter dans les meilleurs délais pour confirmer ce rendez-vous.
+                    </p>
                 </div>
             </div>
         );

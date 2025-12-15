@@ -79,33 +79,41 @@ export async function POST(request: NextRequest) {
         // }
 
         // Generate 6-digit OTP code
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        let code = Math.floor(100000 + Math.random() * 900000).toString();
+        const isTestNumber = formattedPhone === '+33612345678';
+
+        if (isTestNumber) {
+            code = '123456';
+            console.log('Test number detected, using code 123456');
+        }
 
         // Calculate expiration time
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + OTP_EXPIRATION_MINUTES);
 
         // Expire old OTPs for this phone
-        // await expireOldOtpsForPhone(formattedPhone);
+        await expireOldOtpsForPhone(formattedPhone);
 
         // Create new OTP record
-        // await createOtpRecord({
-        //     phone: formattedPhone,
-        //     code,
-        //     expiresAt: expiresAt.toISOString(),
-        // });
+        await createOtpRecord({
+            phone: formattedPhone,
+            code,
+            expiresAt: expiresAt.toISOString(),
+        });
 
-        // Send SMS
-        const smsBody = `MonMeilleurBien.fr - Votre code de vérification est : ${code}. Ce code est valide pendant ${OTP_EXPIRATION_MINUTES} minutes.`;
+        // Send SMS (skip for test number)
+        if (!isTestNumber) {
+            const smsBody = `MonMeilleurBien.fr - Votre code de vérification est : ${code}. Ce code est valide pendant ${OTP_EXPIRATION_MINUTES} minutes.`;
 
-        try {
-            //await sendSms(formattedPhone, smsBody);
-        } catch (smsError) {
-            console.error('Error sending SMS:', smsError);
-            return NextResponse.json(
-                { error: "Impossible d'envoyer le SMS. Veuillez réessayer." },
-                { status: 500 }
-            );
+            try {
+                await sendSms(formattedPhone, smsBody);
+            } catch (smsError) {
+                console.error('Error sending SMS:', smsError);
+                return NextResponse.json(
+                    { error: "Impossible d'envoyer le SMS. Veuillez réessayer." },
+                    { status: 500 }
+                );
+            }
         }
 
         // Create or update lead in Airtable
