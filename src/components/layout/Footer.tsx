@@ -1,4 +1,4 @@
-import { Mail } from "lucide-react";
+import { Heart, Mail } from "lucide-react";
 
 export function Footer() {
     return (
@@ -96,15 +96,17 @@ export function Footer() {
                         © 2024 MonMeilleurBien.fr. Tous droits réservés.
                     </p>
                     <div className="flex space-x-4 mt-4 md:mt-0">
-                        <span className="text-gray-400 text-sm">
-                            Développé par{" "}
+                        <span className="flex gap-2 flex-nowrap items-center text-gray-400 text-sm whitespace-nowrap">
+                            <span className="flex gap-2 flex-nowrap items-center whitespace-nowrap">
+                                Développé avec <Heart className="w-4 h-4 fill-gray-400" /> par
+                            </span>
                             <a
                                 href="https://www.artech-group.fr"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="hover:text-white transition-colors"
                             >
-                                Artech
+                                ARTECH
                             </a>
                         </span>
                     </div>
