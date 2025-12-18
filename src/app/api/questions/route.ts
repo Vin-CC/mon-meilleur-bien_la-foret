@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
         const tableName = getQuestionTableName();
 
         const fields: Record<string, any> = {
-            Nom: nom,
-            Prénom: prenom,
+            "Nom & Prénom": `${nom} ${prenom}`,
             Email: email,
             Tel: telephone,
             "Les Besoins": message,

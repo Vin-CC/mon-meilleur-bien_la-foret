@@ -29,7 +29,7 @@ import { useState, useEffect, ForwardRefExoticComponent, RefAttributes } from "r
 import { useAddressAutocomplete } from "@/hooks/useAddressAutocomplete";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar } from "@/components/ui/calendar";
+import { CustomCalendar } from "@/components/ui/custom-calendar";
 import { fr } from "date-fns/locale";
 import { format } from "date-fns";
 
@@ -111,6 +111,9 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     const [sending, setSending] = useState(false);
     const [verifying, setVerifying] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
+    const [appointmentDate, setAppointmentDate] = useState<Date | undefined>(undefined);
+    const [appointmentTime, setAppointmentTime] = useState<string | null>(null);
+    const [appointmentSubmitting, setAppointmentSubmitting] = useState(false);
 
     // Sync address from hook to formData
     useEffect(() => {
@@ -153,6 +156,9 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             setPhoneStep("phoneInput");
             setOtpCode("");
             setResendCooldown(0);
+            setAppointmentDate(undefined);
+            setAppointmentTime(null);
+            setAppointmentSubmitting(false);
         }
     }, [open, setAddress]);
 
@@ -170,7 +176,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
     const showProjectStep = formData.estimationReason !== "curiosite";
-    const totalSteps = 12 + (isApartment ? 1 : 0) + (showProjectStep ? 1 : 0);
+    const totalSteps = 13 + (isApartment ? 1 : 0) + (showProjectStep ? 1 : 0);
 
     const progress = (step / totalSteps) * 100;
 
@@ -201,6 +207,16 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 });
             }, 500);
         }
+    };
+
+    const formatPrice = (value: number | null) => {
+        if (value === null || isNaN(value)) return "—";
+        return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value) + " €";
+    };
+
+    const formatPricePerM2 = (value: number | null) => {
+        if (value === null || isNaN(value)) return "—";
+        return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(value) + " €/m²";
     };
 
     const handleBack = () => {
@@ -802,7 +818,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         const optionsToRender = timelineOptions.length > 0
             ? timelineOptions
             : [
-                { id: "3-mois", name: "De 3 Mois" },
+                { id: "3-mois", name: "Moins de 3 Mois" },
                 { id: "3-6-mois", name: "Entre 3 et 6 Mois" },
                 { id: "6-12-mois", name: "Entre 6 et 12 Mois" },
                 { id: "+12-mois", name: "Plus de 12 Mois" },
@@ -947,11 +963,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
 
             toast.success('Téléphone vérifié avec succès !');
             setPhoneStep('verified');
-
-            // Auto-advance after short delay
-            setTimeout(() => {
-                handleFormSubmit();
-            }, 1500);
+            setStep(totalSteps);
         } catch (error) {
             console.error('Error verifying OTP:', error);
             toast.error('Erreur de connexion. Veuillez réessayer.');
@@ -960,31 +972,72 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         }
     };
 
-    const handleFormSubmit = () => {
-        console.log('Form submitted:', formData);
-        setOpen(false);
-        // Reset after delay
-        setTimeout(() => {
-            setStep(1);
-            setFormData({
-                propertyType: null,
-                address: "",
-                surface: "",
-                rooms: null,
-                bedrooms: null,
-                condition: null,
-                floor: null,
-                exterior: null,
-                constructionYear: "",
-                isOwner: null,
-                estimationReason: null,
-                projectTimeline: null,
-                contact: { name: "", email: "", phone: "" },
+    const handleCreateAppointment = async () => {
+        if (appointmentSubmitting) return;
+        if (!appointmentDate || !appointmentTime) {
+            toast.error("Choisissez une date et une heure.");
+            return;
+        }
 
+        const [firstName, ...lastNameParts] = formData.contact.name.split(' ').filter(Boolean);
+        const lastName = lastNameParts.join(' ') || formData.contact.name;
+
+        setAppointmentSubmitting(true);
+        try {
+            const response = await fetch("/api/rdv", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    address: formData.address,
+                    appointmentDate: appointmentDate.toISOString(),
+                    appointmentTime,
+                    contact: {
+                        firstName: firstName || "",
+                        name: lastName || "",
+                        email: formData.contact.email,
+                        phone: formData.contact.phone,
+                    },
+                }),
             });
-            setPhoneStep("phoneInput");
-            setOtpCode("");
-        }, 500);
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Impossible de créer le rendez-vous.");
+            }
+
+            toast.success("Rendez-vous enregistré !");
+            setOpen(false);
+            // Reset after delay
+            setTimeout(() => {
+                setStep(1);
+                setFormData({
+                    propertyType: null,
+                    address: "",
+                    surface: "",
+                    rooms: null,
+                    bedrooms: null,
+                    condition: null,
+                    floor: null,
+                    exterior: null,
+                    constructionYear: "",
+                    isOwner: null,
+                    estimationReason: null,
+                    projectTimeline: null,
+                    contact: { name: "", email: "", phone: "" },
+
+                });
+                setPhoneStep("phoneInput");
+                setOtpCode("");
+                setAppointmentDate(undefined);
+                setAppointmentTime(null);
+            }, 500);
+        } catch (error: any) {
+            console.error("Error creating appointment:", error);
+            toast.error(error.message || "Erreur lors de la création du rendez-vous.");
+        } finally {
+            setAppointmentSubmitting(false);
+        }
     };
 
     const renderStep13_Phone = () => (
@@ -1104,34 +1157,160 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                     </motion.div>
                 )}
 
-                {phoneStep === "verified" && (
-                    <motion.div
-                        key="verified"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4 }}
-                        className="space-y-6 flex flex-col items-center justify-center py-8"
-                    >
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                        >
-                            <CheckCircle2 className="w-20 h-20 text-brand-green" />
-                        </motion.div>
-                        <div className="text-center">
-                            <h3 className="text-2xl font-semibold text-blue-dark">
-                                Téléphone vérifié !
-                            </h3>
-                            <p className="text-gray-600 mt-2">
-                                Votre demande d'estimation a été envoyée.
-                            </p>
-                        </div>
-                    </motion.div>
-                )}
             </AnimatePresence>
         </div>
     );
+
+    const showPriseRdv = false
+    const renderStep14_Summary = () => {
+        const timeSlots = [
+            "09:00", "09:30", "10:00", "10:30",
+            "11:00", "11:30", "12:00", "12:30",
+            "14:00", "14:30", "15:00", "15:30",
+            "16:00", "16:30", "17:00", "17:30",
+            "18:00"
+        ];
+        const parsedSurface = parseFloat((formData.surface || "").replace(',', '.'));
+        const surfaceValue = isNaN(parsedSurface) ? null : parsedSurface;
+        // Simple indicative estimation based on a baseline price per m²
+        const basePricePerM2 = 4000;
+        const matchPrice = surfaceValue ? Math.round(surfaceValue * basePricePerM2) : null;
+        const heartPrice = surfaceValue ? Math.round(matchPrice! * 1.1) : null;
+        const tags: string[] = [];
+
+        if (formData.propertyType) {
+            const typeLabel = (() => {
+                switch (formData.propertyType) {
+                    case "appartement": return "Appartement";
+                    case "maison": return "Maison";
+                    case "terrain": return "Terrain";
+                    case "autre": return "Autre";
+                    default: return "Bien";
+                }
+            })();
+            tags.push(typeLabel);
+        }
+
+        if (formData.exterior && formData.exterior.length > 0) {
+            tags.push("Extérieur");
+        }
+
+        if (formData.condition) {
+            tags.push("État : " + formData.condition);
+        }
+
+        if (formData.surface) {
+            tags.push(`${formData.surface} m²`);
+        }
+
+        return (
+            <div className="space-y-10">
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <p className="text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+                            Résultat
+                        </p>
+                        <h3 className="text-2xl font-bold text-center text-blue-dark">
+                            Pré-estimation de votre bien
+                        </h3>
+                        <p className="text-center text-gray-700">
+                            {formData.address || "Adresse non renseignée"}
+                        </p>
+                    </div>
+
+                    {tags.length > 0 && (
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {tags.map((tag) => (
+                                <span key={tag} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium text-gray-700">
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4 rounded-xl border border-gray-200 bg-white px-6 py-4 shadow-sm">
+                        <div className="space-y-1 text-center">
+                            <p className="text-sm font-semibold text-gray-500">Prix de marché</p>
+                            <p className="text-2xl font-extrabold text-gray-900">{formatPrice(matchPrice)}</p>
+                            <p className="text-sm text-gray-500">ou {formatPricePerM2(surfaceValue ? Math.round(matchPrice! / surfaceValue) : null)}</p>
+                        </div>
+                        <div className="space-y-1 text-center border-l border-gray-100">
+                            <p className="text-sm font-semibold text-gray-500">Prix coup de cœur</p>
+                            <p className="text-2xl font-extrabold text-brand-blue">{formatPrice(heartPrice)}</p>
+                            <p className="text-sm text-gray-500">ou {formatPricePerM2(surfaceValue ? Math.round(heartPrice! / surfaceValue) : null)}</p>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-gray-700">
+                        Ce prix est une pré-estimation donnée à titre indicatif. Une estimation complète de votre bien en
+                        prenant en compte son environnement local, les caractéristiques propres (agencement, prestations, orientation...),
+                        la construction et son état permettra de compléter cette estimation.
+                    </div>
+                </div>
+
+                {showPriseRdv && <div className="space-y-4">
+                    <div>
+                        <h4 className="text-lg font-bold text-gray-900">
+                            Prenez rendez-vous pour une estimation détaillée
+                        </h4>
+                        <p className="text-sm text-gray-700 mt-1">
+                            Lors de ce rendez-vous, l’expert évaluera les caractéristiques de votre bien et vous remettra un dossier d’estimation argumenté.
+                        </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-white px-4 py-6 shadow-sm space-y-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                                <h5 className="text-center text-base font-semibold text-gray-900">Choisissez une date</h5>
+                                <div className="flex justify-center">
+                                    <CustomCalendar
+                                        selected={appointmentDate}
+                                        onSelect={(date) => setAppointmentDate(date ?? undefined)}
+                                        locale={fr}
+                                        className="border-0"
+                                        disabled={(date) => {
+                                            const today = new Date();
+                                            const minDate = new Date(today);
+                                            minDate.setDate(today.getDate() + 3);
+                                            minDate.setHours(0, 0, 0, 0);
+                                            return date < minDate || date.getDay() === 0;
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <h5 className="text-center text-base font-semibold text-gray-900">Choisissez une heure</h5>
+                                <div className="grid grid-cols-2 gap-2 max-h-[260px] overflow-y-auto">
+                                    {timeSlots.map((time) => (
+                                        <button
+                                            key={time}
+                                            onClick={() => setAppointmentTime(time)}
+                                            className={`w-full rounded-lg p-3 text-sm font-semibold transition-all ${appointmentTime === time
+                                                ? "bg-brand-green/20 text-brand-green border border-brand-green"
+                                                : "bg-green-50 text-green-700 hover:bg-green-100 border border-transparent"
+                                                }`}
+                                        >
+                                            {time}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            onClick={handleCreateAppointment}
+                            disabled={!appointmentDate || !appointmentTime || appointmentSubmitting}
+                            className="mt-1 w-full bg-brand-blue hover:bg-brand-blue/90 text-white"
+                        >
+                            {appointmentSubmitting ? "Création..." : "Confirmer ce rendez-vous"}
+                        </Button>
+                    </div>
+                </div>
+                }
+            </div>
+        );
+    };
 
     const steps = (() => {
         const intentSteps = [
@@ -1167,10 +1346,14 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
 
         const contactSteps = [
             { render: renderStep12_Contact, isValid: () => formData.contact.name.length > 2 && formData.contact.email.includes("@") },
-            { render: renderStep13_Phone, isValid: () => formData.contact.phone.length > 8 },
+            { render: renderStep13_Phone, isValid: () => phoneStep === "verified" },
         ];
 
-        return [...intentSteps, ...baseSteps, ...propertySpecificSteps, ...detailSteps, ...contactSteps];
+        const summarySteps = [
+            { render: renderStep14_Summary, isValid: () => true },
+        ];
+
+        return [...intentSteps, ...baseSteps, ...propertySpecificSteps, ...detailSteps, ...contactSteps, ...summarySteps];
     })();
 
     useEffect(() => {
@@ -1178,6 +1361,8 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             setStep(totalSteps);
         }
     }, [step, totalSteps]);
+
+    // Plus de brouillon automatique : création à la confirmation
 
     const getStepContent = () => steps[step - 1]?.render() || null;
     const isStepValid = () => steps[step - 1]?.isValid() ?? false;
@@ -1187,46 +1372,48 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-                <div className="p-6 space-y-6">
-                    <DialogHeader className="space-y-4">
-                        <div className="flex items-center justify-between relative">
-                            <DialogTitle className="text-xl font-bold text-center w-full">
-                                Estimation gratuite
-                            </DialogTitle>
-                        </div>
-                        <div className="space-y-2">
-                            <Progress value={progress} className="h-2 [&>[data-slot=progress-indicator]]:bg-brand-green" />
-                            <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}% terminé</p>
-                        </div>
-                    </DialogHeader>
+            <DialogContent className="sm:max-w-[700px] p-0 gap-0 overflow-hidden max-h-[90vh]">
+                <div className="max-h-[90vh] overflow-y-auto">
+                    <div className="p-6 space-y-6">
+                        <DialogHeader className="space-y-4">
+                            <div className="flex items-center justify-between relative">
+                                <DialogTitle className="text-xl font-bold text-center w-full">
+                                    Estimation gratuite
+                                </DialogTitle>
+                            </div>
+                            <div className="space-y-2">
+                                <Progress value={progress} className="h-2 [&>[data-slot=progress-indicator]]:bg-brand-green" />
+                                <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}% terminé</p>
+                            </div>
+                        </DialogHeader>
 
-                    <div className="py-2 min-h-[300px]">
-                        {getStepContent()}
-                    </div>
+                        <div className="py-2 min-h-[300px]">
+                            {getStepContent()}
+                        </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                        {step > 1 && step !== totalSteps ? (
-                            <Button
-                                onClick={handleBack}
-                                variant="outline"
-                                className="gap-2"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Précédent
-                            </Button>
-                        ) : (
-                            <div></div>
-                        )}
-                        {step !== totalSteps && (
-                            <Button
-                                onClick={handleNext}
-                                className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={!isStepValid()}
-                            >
-                                Suivant
-                            </Button>
-                        )}
+                        <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+                            {step > 1 && step !== totalSteps ? (
+                                <Button
+                                    onClick={handleBack}
+                                    variant="outline"
+                                    className="gap-2"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                    Précédent
+                                </Button>
+                            ) : (
+                                <div></div>
+                            )}
+                            {step !== totalSteps && (
+                                <Button
+                                    onClick={handleNext}
+                                    className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!isStepValid()}
+                                >
+                                    Suivant
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </DialogContent>
