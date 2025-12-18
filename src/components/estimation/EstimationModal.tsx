@@ -46,6 +46,7 @@ type Exterior = "balcon" | "terrasse" | "jardin" | "pas-d-exterieur";
 type ExteriorSelection = Exterior[] | null;
 type Ownership = "proprietaire" | "locataire" | null;
 type ProjectTimeline = "immediat" | "3-mois" | "6-mois" | "indefini" | null;
+type EstimationReason = "vente" | "curiosite" | null;
 type PhoneStepState = "phoneInput" | "otpInput" | "verified";
 
 interface FormData {
@@ -59,6 +60,7 @@ interface FormData {
     exterior: ExteriorSelection;
     constructionYear: string;
     isOwner: Ownership;
+    estimationReason: EstimationReason;
     projectTimeline: ProjectTimeline;
     contact: {
         name: string;
@@ -94,6 +96,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         exterior: null,
         constructionYear: "",
         isOwner: null,
+        estimationReason: null,
         projectTimeline: null,
         contact: {
             name: "",
@@ -141,6 +144,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 exterior: null,
                 constructionYear: "",
                 isOwner: null,
+                estimationReason: null,
                 projectTimeline: null,
                 contact: { name: "", email: "", phone: "" },
             });
@@ -165,12 +169,13 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     // Calculate total steps dynamically based on property type
     // Calculate total steps dynamically based on property type
     const isApartment = formData.propertyType === "appartement";
-    const TOTAL_STEPS = isApartment ? 13 : 12;
+    const showProjectStep = formData.estimationReason !== "curiosite";
+    const totalSteps = 12 + (isApartment ? 1 : 0) + (showProjectStep ? 1 : 0);
 
-    const progress = (step / TOTAL_STEPS) * 100;
+    const progress = (step / totalSteps) * 100;
 
     const handleNext = () => {
-        if (step < TOTAL_STEPS) {
+        if (step < totalSteps) {
             setStep(step + 1);
         } else {
             // Submit form
@@ -190,6 +195,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                     exterior: null,
                     constructionYear: "",
                     isOwner: null,
+                    estimationReason: null,
                     projectTimeline: null,
                     contact: { name: "", email: "", phone: "" },
                 });
@@ -212,117 +218,6 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             ...prev,
             contact: { ...prev.contact, [key]: value },
         }));
-    };
-
-    // Helper to determine current step index considering conditional steps
-    // Step mapping:
-    // 1: Type
-    // 2: Address
-    // 3: Surface
-    // 4: Rooms
-    // 5: Bedrooms
-    // 6: Condition
-    // 7: Floor (Only if Apartment) -> If not apartment, this step index is skipped in logic but UI needs to handle it
-    // To simplify, we'll just render based on current step number and adjust the content dynamically
-
-    // Actually, it's easier to keep a linear step counter and render content based on a list of steps
-    // But since I'm using a simple number, I need to handle the conditional jump.
-
-    // Let's refactor the render logic to be more robust.
-    // We will define the sequence of steps.
-
-    const getStepContent = () => {
-        // Base steps that are always present
-        // 1. Type
-        // 2. Address
-        // 3. Surface
-        // 4. Rooms
-        // 5. Bedrooms
-        // 6. Condition
-        // 7. Floor (Conditional)
-        // 8. Exterior
-        // 9. Construction Year
-        // 10. Ownership
-        // 11. Project Timeline
-        // 12. Contact
-
-        // If not apartment, we skip Floor. So:
-        // Apt: 1, 2, 3, 4, 5, 6, 7(Floor), 8, 9, 10, 11, 12 (Total 12)
-        // House: 1, 2, 3, 4, 5, 6, 7(Exterior), 8(Year), 9(Owner), 10(Project), 11(Contact) (Total 11)
-
-        // This means step 7 is Floor for Apt, but Exterior for House.
-
-        if (isApartment) {
-            switch (step) {
-                case 1: return renderStep1_Type();
-                case 2: return renderStep2_Address();
-                case 3: return renderStep3_Surface();
-                case 4: return renderStep4_Rooms();
-                case 5: return renderStep5_Bedrooms();
-                case 6: return renderStep6_Condition();
-                case 7: return renderStep7_Floor();
-                case 8: return renderStep8_Exterior();
-                case 9: return renderStep9_Year();
-                case 10: return renderStep10_Ownership();
-                case 11: return renderStep11_Project();
-                case 12: return renderStep12_Contact();
-                case 13: return renderStep13_Phone();
-                default: return null;
-            }
-        } else {
-            switch (step) {
-                case 1: return renderStep1_Type();
-                case 2: return renderStep2_Address();
-                case 3: return renderStep3_Surface();
-                case 4: return renderStep4_Rooms();
-                case 5: return renderStep5_Bedrooms();
-                case 6: return renderStep6_Condition();
-                case 7: return renderStep8_Exterior(); // Skip Floor
-                case 8: return renderStep9_Year();
-                case 9: return renderStep10_Ownership();
-                case 10: return renderStep11_Project();
-                case 11: return renderStep12_Contact();
-                case 12: return renderStep13_Phone();
-                default: return null;
-            }
-        }
-    };
-
-    const isStepValid = () => {
-        if (isApartment) {
-            switch (step) {
-                case 1: return !!formData.propertyType;
-                case 2: return formData.address.length > 5;
-                case 3: return formData.surface.length > 0 && !isNaN(Number(formData.surface));
-                case 4: return formData.rooms !== null;
-                case 5: return formData.bedrooms !== null;
-                case 6: return !!formData.condition;
-                case 7: return formData.floor !== null;
-                case 8: return !!formData.exterior && formData.exterior.length > 0;
-                case 9: return formData.constructionYear.length === 4 && !isNaN(Number(formData.constructionYear));
-                case 10: return !!formData.isOwner;
-                case 11: return !!formData.projectTimeline;
-                case 12: return formData.contact.name.length > 2 && formData.contact.email.includes("@");
-                case 13: return formData.contact.phone.length > 8;
-                default: return false;
-            }
-        } else {
-            switch (step) {
-                case 1: return !!formData.propertyType;
-                case 2: return formData.address.length > 5;
-                case 3: return formData.surface.length > 0 && !isNaN(Number(formData.surface));
-                case 4: return formData.rooms !== null;
-                case 5: return formData.bedrooms !== null;
-                case 6: return !!formData.condition;
-                case 7: return !!formData.exterior && formData.exterior.length > 0;
-                case 8: return formData.constructionYear.length === 4 && !isNaN(Number(formData.constructionYear));
-                case 9: return !!formData.isOwner;
-                case 10: return !!formData.projectTimeline;
-                case 11: return formData.contact.name.length > 2 && formData.contact.email.includes("@");
-                case 12: return formData.contact.phone.length > 8;
-                default: return false;
-            }
-        }
     };
 
     // State for dynamic options
@@ -456,11 +351,14 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                                 <button
                                     key={item.id}
                                     onClick={() => {
-                                        updateFormData("propertyType", item.id);
-                                        // If address is already filled, skip to step 3
                                         const hasValidAddress = formData.address.length > 5;
                                         setFormData(prev => ({ ...prev, propertyType: item.id as PropertyType }));
-                                        setTimeout(() => setStep(hasValidAddress ? 3 : 2), 0);
+                                        // Move forward; if l'adresse est déjà valide, on saute la saisie d'adresse.
+                                        setStep((prevStep) => {
+                                            const jump = hasValidAddress ? 2 : 1;
+                                            const nextStep = prevStep + jump;
+                                            return nextStep > totalSteps ? totalSteps : nextStep;
+                                        });
                                     }}
                                     className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-left group ${formData.propertyType === item.id ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
                                 >
@@ -850,6 +748,37 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         );
     };
 
+    const renderStep11_EstimationReason = () => (
+        <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-center text-blue-dark">
+                Pourquoi souhaitez-vous une estimation ?
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
+                <button
+                    onClick={() => {
+                        updateFormData("estimationReason", "vente");
+                        handleNext();
+                    }}
+                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.estimationReason === "vente" ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
+                >
+                    <span className="block font-semibold text-gray-900 text-xl">J&apos;ai un projet de vente</span>
+                    <span className="text-sm text-gray-500">Je prépare une mise en vente</span>
+                </button>
+                <button
+                    onClick={() => {
+                        updateFormData("estimationReason", "curiosite");
+                        updateFormData("projectTimeline", null);
+                        handleNext();
+                    }}
+                    className={`p-6 rounded-xl border-2 transition-all hover:border-brand-green hover:bg-brand-green/5 text-center ${formData.estimationReason === "curiosite" ? "border-brand-green bg-brand-green/10" : "border-gray-100"}`}
+                >
+                    <span className="block font-semibold text-gray-900 text-xl">Par curiosité</span>
+                    <span className="text-sm text-gray-500">Je veux simplement connaître la valeur</span>
+                </button>
+            </div>
+        </div>
+    );
+
     // Helper to map timeline options to UI labels
     const getTimelineLabel = (name: string) => {
         const lowerName = name.toLowerCase();
@@ -877,7 +806,6 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 { id: "3-6-mois", name: "Entre 3 et 6 Mois" },
                 { id: "6-12-mois", name: "Entre 6 et 12 Mois" },
                 { id: "+12-mois", name: "Plus de 12 Mois" },
-                { id: "curiosite", name: "Juste Curiosité" },
             ];
 
         return (
@@ -974,6 +902,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         exterior: formData.exterior,
                         constructionYear: formData.constructionYear,
                         isOwner: formData.isOwner,
+                        estimationReason: formData.estimationReason,
                         projectTimeline: formData.projectTimeline,
                     },
                 }),
@@ -1048,6 +977,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 exterior: null,
                 constructionYear: "",
                 isOwner: null,
+                estimationReason: null,
                 projectTimeline: null,
                 contact: { name: "", email: "", phone: "" },
 
@@ -1203,6 +1133,55 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         </div>
     );
 
+    const steps = (() => {
+        const intentSteps = [
+            { render: renderStep10_Ownership, isValid: () => !!formData.isOwner },
+            { render: renderStep11_EstimationReason, isValid: () => !!formData.estimationReason },
+        ];
+
+        if (showProjectStep) {
+            intentSteps.push({ render: renderStep11_Project, isValid: () => !!formData.projectTimeline });
+        }
+
+        const baseSteps = [
+            { render: renderStep1_Type, isValid: () => !!formData.propertyType },
+            { render: renderStep2_Address, isValid: () => formData.address.length > 5 },
+            { render: renderStep3_Surface, isValid: () => formData.surface.length > 0 && !isNaN(Number(formData.surface)) },
+            { render: renderStep4_Rooms, isValid: () => formData.rooms !== null },
+            { render: renderStep5_Bedrooms, isValid: () => formData.bedrooms !== null },
+            { render: renderStep6_Condition, isValid: () => !!formData.condition },
+        ];
+
+        const propertySpecificSteps = isApartment
+            ? [
+                { render: renderStep7_Floor, isValid: () => formData.floor !== null },
+                { render: renderStep8_Exterior, isValid: () => !!formData.exterior && formData.exterior.length > 0 },
+            ]
+            : [
+                { render: renderStep8_Exterior, isValid: () => !!formData.exterior && formData.exterior.length > 0 },
+            ];
+
+        const detailSteps = [
+            { render: renderStep9_Year, isValid: () => formData.constructionYear.length === 4 && !isNaN(Number(formData.constructionYear)) },
+        ];
+
+        const contactSteps = [
+            { render: renderStep12_Contact, isValid: () => formData.contact.name.length > 2 && formData.contact.email.includes("@") },
+            { render: renderStep13_Phone, isValid: () => formData.contact.phone.length > 8 },
+        ];
+
+        return [...intentSteps, ...baseSteps, ...propertySpecificSteps, ...detailSteps, ...contactSteps];
+    })();
+
+    useEffect(() => {
+        if (step > totalSteps) {
+            setStep(totalSteps);
+        }
+    }, [step, totalSteps]);
+
+    const getStepContent = () => steps[step - 1]?.render() || null;
+    const isStepValid = () => steps[step - 1]?.isValid() ?? false;
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -1227,7 +1206,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                     </div>
 
                     <div className="flex justify-between items-center pt-4 border-t border-gray-50">
-                        {step > 1 && step !== TOTAL_STEPS ? (
+                        {step > 1 && step !== totalSteps ? (
                             <Button
                                 onClick={handleBack}
                                 variant="outline"
@@ -1239,7 +1218,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                         ) : (
                             <div></div>
                         )}
-                        {step !== TOTAL_STEPS && (
+                        {step !== totalSteps && (
                             <Button
                                 onClick={handleNext}
                                 className="bg-brand-green hover:bg-brand-green/90 text-white px-8 py-2 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"

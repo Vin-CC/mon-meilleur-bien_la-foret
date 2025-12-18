@@ -77,6 +77,7 @@ export function Hero() {
                                         placeholder="Entrez votre adresse..."
                                         className="w-full pl-10 pr-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none rounded-lg"
                                         value={address}
+                                        name="realEstateAddress"
                                         onChange={handleAddressChange}
                                         onBlur={() => {
                                             setTimeout(() => setShowSuggestions(false), 200);

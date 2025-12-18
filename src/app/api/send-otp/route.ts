@@ -3,7 +3,6 @@ import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js';
 import {
     createOtpRecord,
     expireOldOtpsForPhone,
-    findActiveOtpByPhone,
     createOrUpdateLead,
     type LeadData,
 } from '@/lib/airtable-otp';
@@ -78,43 +77,38 @@ export async function POST(request: NextRequest) {
         //     }
         // }
 
-        // Generate 6-digit OTP code
-        let code = Math.floor(100000 + Math.random() * 900000).toString();
         const isTestNumber = formattedPhone === '+33612345678';
-
-        if (isTestNumber) {
-            code = '123456';
-            console.log('Test number detected, using code 123456');
-        }
-
-        // Calculate expiration time
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + OTP_EXPIRATION_MINUTES);
 
         // Expire old OTPs for this phone
         await expireOldOtpsForPhone(formattedPhone);
 
-        // Create new OTP record
+        // Send SMS (skip for test number)
+        let verificationSid: string | undefined;
+
+        if (isTestNumber) {
+            throw new Error('Numéro invalide');
+        }
+
+        try {
+            const smsBody = `MonMeilleurBien.fr - Code de vérification valable ${OTP_EXPIRATION_MINUTES} minutes.`;
+            const verification = await sendSms(formattedPhone, smsBody);
+            verificationSid = verification?.sid;
+        } catch (smsError) {
+            console.error('Error sending SMS:', smsError);
+            return NextResponse.json(
+                { error: "Impossible d'envoyer le SMS. Veuillez réessayer." },
+                { status: 500 }
+            );
+        }
+
+        // Create new OTP record for audit (stores Twilio verification SID)
         await createOtpRecord({
             phone: formattedPhone,
-            code,
+            code: verificationSid || 'twilio-verify',
             expiresAt: expiresAt.toISOString(),
         });
-
-        // Send SMS (skip for test number)
-        if (!isTestNumber) {
-            const smsBody = `MonMeilleurBien.fr - Votre code de vérification est : ${code}. Ce code est valide pendant ${OTP_EXPIRATION_MINUTES} minutes.`;
-
-            try {
-                await sendSms(formattedPhone, smsBody);
-            } catch (smsError) {
-                console.error('Error sending SMS:', smsError);
-                return NextResponse.json(
-                    { error: "Impossible d'envoyer le SMS. Veuillez réessayer." },
-                    { status: 500 }
-                );
-            }
-        }
 
         // Create or update lead in Airtable
         try {

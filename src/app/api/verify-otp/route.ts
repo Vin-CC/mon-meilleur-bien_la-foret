@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-    findActiveOtpByPhone,
-    markOtpAsUsed,
-    // ✅ à ajouter côté lib si possible
-    markOtpAsExpired,
-    markPhoneAsVerified,
-    // ✅ optionnel si tu peux l’ajouter : consommer de façon atomique
-    // consumeOtpIfValid,
-} from '@/lib/airtable-otp';
+import { findActiveOtpByPhone, markOtpAsUsed, markPhoneAsVerified } from '@/lib/airtable-otp';
+import { checkVerificationCode } from '@/lib/sms';
 
 interface VerifyOtpRequest {
     phone: string;
@@ -95,45 +88,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find active OTP for this phone
+        // Optionally re-read active OTP to mark it as used for audit
         const otpRecord = await findActiveOtpByPhone(phone);
 
-        // Toujours réponse générique pour éviter l’énumération
-        if (!otpRecord) {
-            return NextResponse.json({ error: genericError }, { status: 400 });
-        }
+        // Vérification via Twilio Verify (client.verify.v2.services)
+        try {
+            const verification = await checkVerificationCode(phone, code);
+            const approved = verification.valid ?? verification.status === 'approved';
 
-        // Expiration
-        const now = new Date();
-        const expiresAt = new Date(otpRecord.expiresAt);
-
-        if (Number.isNaN(expiresAt.getTime()) || now > expiresAt) {
-            // ✅ marque comme expiré si possible
-            try {
-                if (typeof markOtpAsExpired === 'function') {
-                    await markOtpAsExpired(otpRecord.id);
-                } else {
-                    // fallback : si tu n'as pas encore markOtpAsExpired
-                    await markOtpAsUsed(otpRecord.id);
-                }
-            } catch (e) {
-                console.error('Error marking OTP as expired:', e);
+            if (!approved) {
+                return NextResponse.json({ error: genericError }, { status: 400 });
             }
 
+            if (otpRecord) {
+                try {
+                    await markOtpAsUsed(otpRecord.id);
+                } catch (e) {
+                    console.error('Error marking OTP as used:', e);
+                }
+            }
+        } catch (verificationError) {
+            console.error('Twilio verification failed:', verificationError);
             return NextResponse.json({ error: genericError }, { status: 400 });
-        }
-
-        // Vérification du code (idéalement compare un hash côté DB)
-        if (otpRecord.code !== code) {
-            return NextResponse.json({ error: genericError }, { status: 400 });
-        }
-
-        // Consommer l’OTP (idéalement atomique côté DB)
-        try {
-            await markOtpAsUsed(otpRecord.id);
-        } catch (e) {
-            console.error('Error marking OTP as used:', e);
-            return NextResponse.json({ error: 'Une erreur est survenue.' }, { status: 500 });
         }
 
         // Marquer le téléphone comme vérifié (best effort)

@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
             Prénom: prenom,
             Email: email,
             Tel: telephone,
-            Message: message,
-            Source: "Formulaire Une question spécifique",
+            "Les Besoins": message,
+            // Source: "Formulaire Une question spécifique",
         };
 
         await base(tableName).create([{ fields }]);

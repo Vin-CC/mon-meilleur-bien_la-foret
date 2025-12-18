@@ -1,3 +1,4 @@
+import { FieldSet } from 'airtable';
 import { getAirtableBase, getOtpTableName, getLeadsTableName } from './airtable';
 
 // ============================================================================
@@ -72,12 +73,12 @@ export async function createOtpRecord(params: {
     phone: string;
     code: string;
     expiresAt: string;
-}): Promise<void> {
+}): Promise<FieldSet> {
     const base = getAirtableBase();
     const tableName = getOtpTableName();
 
     try {
-        await base(tableName).create([
+        const response = await base(tableName).create([
             {
                 fields: {
                     Phone: normalizePhone(params.phone),
@@ -88,6 +89,10 @@ export async function createOtpRecord(params: {
                 },
             },
         ]);
+
+        console.log('OTP record created successfully:', response[0].fields);
+
+        return response[0].fields
     } catch (error) {
         console.error('Error creating OTP record:', error);
         throw new Error('Failed to create OTP record');

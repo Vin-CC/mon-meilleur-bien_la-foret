@@ -34,16 +34,17 @@ export async function POST(request: NextRequest) {
             ? undefined
             : dateValue.toISOString().split("T")[0];
 
+
+        const dateHeure = `${formattedDate} ${appointmentTime}`;
+
         const fields: Record<string, any> = {
-            "Adresse du Bien": address,
-            "Date RDV": formattedDate,
-            "Heure RDV": appointmentTime,
-            "Prénom": contact.firstName || "",
-            "Nom": contact.name,
+            "Adresse complète du Bien": address,
+            "Date RDV Estimation": dateHeure,
+            "Nom & Prénom": `${contact.firstName} ${contact.name}`,
             Email: contact.email,
             Tel: contact.phone,
-            Source: "Prise de RDV en ligne",
-            Détails: JSON.stringify(body),
+            // Source: "Prise de RDV en ligne",
+            // Détails: JSON.stringify(body),
         };
 
         // Remove undefined to avoid Airtable errors
