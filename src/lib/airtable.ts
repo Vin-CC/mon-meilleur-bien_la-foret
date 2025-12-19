@@ -63,13 +63,6 @@ export async function sendHookRequest<T = any>(payload: HookRequest): Promise<T>
 }
 
 /**
- * Get the name of the OTP table from environment variables
- */
-export function getOtpTableName(): string {
-    return process.env.AIRTABLE_TABLE_OTP || '';
-}
-
-/**
  * Get the name of the Leads table from environment variables
  */
 export function getLeadsTableName(): string {
