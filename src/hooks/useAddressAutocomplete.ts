@@ -16,6 +16,7 @@ interface AddressSuggestion {
 
 export function useAddressAutocomplete(initialAddress: string = "") {
     const [address, setAddress] = useState(initialAddress);
+    const [city, setCity] = useState("");
     const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -42,11 +43,13 @@ export function useAddressAutocomplete(initialAddress: string = "") {
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setAddress(value);
+        setCity("");
         fetchAddressSuggestions(value);
     };
 
     const handleSelectAddress = (suggestion: AddressSuggestion) => {
         setAddress(suggestion.label);
+        setCity(suggestion.city || "");
         setSuggestions([]);
         setShowSuggestions(false);
     };
@@ -54,6 +57,8 @@ export function useAddressAutocomplete(initialAddress: string = "") {
     return {
         address,
         setAddress,
+        city,
+        setCity,
         suggestions,
         showSuggestions,
         setShowSuggestions,

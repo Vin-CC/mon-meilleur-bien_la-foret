@@ -52,6 +52,7 @@ type PhoneStepState = "phoneInput" | "otpInput" | "verified";
 interface FormData {
     propertyType: PropertyType;
     address: string;
+    city: string;
     surface: string;
     rooms: number | null;
     bedrooms: number | null;
@@ -78,6 +79,8 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     const {
         address,
         setAddress,
+        city,
+        setCity,
         suggestions,
         showSuggestions,
         setShowSuggestions,
@@ -88,6 +91,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     const [formData, setFormData] = useState<FormData>({
         propertyType: null,
         address: defaultAddress,
+        city: "",
         surface: "",
         rooms: null,
         bedrooms: null,
@@ -117,15 +121,16 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
 
     // Sync address from hook to formData
     useEffect(() => {
-        setFormData(prev => ({ ...prev, address }));
-    }, [address]);
+        setFormData(prev => ({ ...prev, address, city }));
+    }, [address, city]);
 
     // Update address if defaultAddress changes
     useEffect(() => {
         if (defaultAddress) {
             setAddress(defaultAddress);
+            setCity("");
         }
-    }, [defaultAddress, setAddress]);
+    }, [defaultAddress, setAddress, setCity]);
 
     // Reset modal content when closed
     useEffect(() => {
@@ -135,6 +140,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
             setFormData({
                 propertyType: null,
                 address: "",
+                city: "",
                 surface: "",
                 rooms: null,
                 bedrooms: null,
@@ -189,6 +195,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 setFormData({
                     propertyType: null,
                     address: "",
+                    city: "",
                     surface: "",
                     rooms: null,
                     bedrooms: null,
@@ -943,6 +950,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                     estimationData: {
                         propertyType: formData.propertyType,
                         address: formData.address,
+                        city: formData.city,
                         surface: formData.surface,
                         rooms: formData.rooms,
                         bedrooms: formData.bedrooms,
@@ -1017,6 +1025,7 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
                 setFormData({
                     propertyType: null,
                     address: "",
+                    city: "",
                     surface: "",
                     rooms: null,
                     bedrooms: null,

@@ -25,6 +25,7 @@ export interface LeadData {
     estimationData?: {
         propertyType?: string;
         address?: string;
+        city?: string;
         surface?: string;
         rooms?: number;
         bedrooms?: number;
@@ -104,8 +105,13 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             }
             if (data.estimationData.address) {
                 fields['Adresse complète du Bien'] = data.estimationData.address;
-                const city = extractCityFromAddress(data.estimationData.address);
-                if (city) fields['Ville'] = city;
+                if (!data.estimationData.city) {
+                    const city = extractCityFromAddress(data.estimationData.address);
+                    if (city) fields['Ville'] = city;
+                }
+            }
+            if (data.estimationData.city) {
+                fields['Ville'] = data.estimationData.city;
             }
             if (data.estimationData.surface) {
                 fields['Superficie'] = data.estimationData.surface;
