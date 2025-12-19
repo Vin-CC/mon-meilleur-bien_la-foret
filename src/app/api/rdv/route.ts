@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAirtableBase, getRdvTableName } from "@/lib/airtable";
+import { sendHookRequest } from "@/lib/airtable";
 
 interface AppointmentPayload {
     address: string;
@@ -25,9 +25,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const base = getAirtableBase();
-        const tableName = getRdvTableName();
-
         // Normalize date to YYYY-MM-DD for Airtable
         const dateValue = new Date(appointmentDate);
         const formattedDate = Number.isNaN(dateValue.getTime())
@@ -45,6 +42,7 @@ export async function POST(request: NextRequest) {
             Tel: contact.phone,
             // Source: "Prise de RDV en ligne",
             // Détails: JSON.stringify(body),
+            Source: "RDV",
         };
 
         // Remove undefined to avoid Airtable errors
@@ -54,11 +52,11 @@ export async function POST(request: NextRequest) {
             }
         });
 
-        await base(tableName).create([{ fields }]);
+        await sendHookRequest(fields);
 
         return NextResponse.json({ ok: true });
     } catch (error) {
-        console.error("Error creating appointment in Airtable:", error);
+        console.error("Error creating appointment via hook:", error);
         return NextResponse.json(
             { error: "Impossible de créer le rendez-vous. Veuillez réessayer." },
             { status: 500 }

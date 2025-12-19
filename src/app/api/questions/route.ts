@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAirtableBase, getQuestionTableName } from "@/lib/airtable";
+import { sendHookRequest } from "@/lib/airtable";
 
 interface QuestionPayload {
     nom: string;
@@ -21,22 +21,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const base = getAirtableBase();
-        const tableName = getQuestionTableName();
-
         const fields: Record<string, any> = {
             "Nom & Prénom": `${nom} ${prenom}`,
             Email: email,
             Tel: telephone,
             "Les Besoins": message,
-            // Source: "Formulaire Une question spécifique",
+            Source: "Formulaire",
         };
 
-        await base(tableName).create([{ fields }]);
+        await sendHookRequest(fields);
 
         return NextResponse.json({ ok: true });
     } catch (error) {
-        console.error("Error creating question in Airtable:", error);
+        console.error("Error creating question via hook:", error);
         return NextResponse.json(
             { error: "Impossible d'envoyer votre question pour le moment." },
             { status: 500 }

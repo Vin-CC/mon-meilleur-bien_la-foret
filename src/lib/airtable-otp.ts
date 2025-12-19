@@ -1,5 +1,4 @@
-import { FieldSet } from 'airtable';
-import { getAirtableBase, getOtpTableName, getLeadsTableName } from './airtable';
+import { getOtpTableName, getLeadsTableName, sendHookRequest } from './airtable';
 
 // ============================================================================
 // Types
@@ -37,6 +36,12 @@ export interface LeadData {
     };
 }
 
+interface HookRecord {
+    id?: string;
+    fields: Record<string, any>;
+    createdTime?: string;
+}
+
 // ============================================================================
 // Helpers
 // ============================================================================
@@ -67,32 +72,36 @@ export function normalizePhone(input: string): string {
 // ============================================================================
 
 /**
- * Create a new OTP record in Airtable
+ * Create a new OTP record via the hook endpoint
  */
 export async function createOtpRecord(params: {
     phone: string;
     code: string;
     expiresAt: string;
-}): Promise<FieldSet> {
-    const base = getAirtableBase();
+}): Promise<Record<string, any>> {
     const tableName = getOtpTableName();
 
     try {
-        const response = await base(tableName).create([
-            {
-                fields: {
-                    Phone: normalizePhone(params.phone),
-                    Code: params.code,
-                    'Expires At': params.expiresAt,
-                    Status: 'active',
-                    'Created At': new Date().toISOString(),
+        const response = await sendHookRequest<{ records?: HookRecord[] }>({
+            operation: 'create',
+            table: tableName,
+            records: [
+                {
+                    fields: {
+                        Phone: normalizePhone(params.phone),
+                        Code: params.code,
+                        'Expires At': params.expiresAt,
+                        Status: 'active',
+                        'Created At': new Date().toISOString(),
+                    },
                 },
-            },
-        ]);
+            ],
+        });
 
-        console.log('OTP record created successfully:', response[0].fields);
+        const fields = response.records?.[0]?.fields ?? {};
+        console.log('OTP record created successfully via hook:', fields);
 
-        return response[0].fields
+        return fields;
     } catch (error) {
         console.error('Error creating OTP record:', error);
         throw new Error('Failed to create OTP record');
@@ -104,7 +113,6 @@ export async function createOtpRecord(params: {
  * (Renvoie null si inexistant ou expiré)
  */
 export async function findActiveOtpByPhone(phone: string): Promise<OtpRecord | null> {
-    const base = getAirtableBase();
     const tableName = getOtpTableName();
 
     const normalizedPhone = normalizePhone(phone);
@@ -113,26 +121,26 @@ export async function findActiveOtpByPhone(phone: string): Promise<OtpRecord | n
     try {
         const nowIso = new Date().toISOString();
 
-        const records = await base(tableName)
-            .select({
-                filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active', {Expires At} > '${nowIso}')`,
-                maxRecords: 1,
-                sort: [{ field: 'Created At', direction: 'desc' }],
-            })
-            .firstPage();
+        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
+            operation: 'select',
+            table: tableName,
+            filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active', {Expires At} > '${nowIso}')`,
+            maxRecords: 1,
+            sort: [{ field: 'Created At', direction: 'desc' }],
+        });
 
-        if (records.length === 0) return null;
+        if (!records || records.length === 0) return null;
 
         const record = records[0];
+        const fields = record.fields ?? {};
 
         return {
-            id: record.id,
-            phone: (record.get('Phone') as string) ?? normalizedPhone,
-            code: record.get('Code') as string,
-            // ✅ fix: field name must match Airtable column
-            expiresAt: record.get('Expires At') as string,
-            status: record.get('Status') as 'active' | 'used' | 'expired',
-            "Created At": record.get('Created At') as string | undefined,
+            id: record.id ?? '',
+            phone: (fields['Phone'] as string) ?? normalizedPhone,
+            code: fields['Code'] as string,
+            expiresAt: fields['Expires At'] as string,
+            status: fields['Status'] as 'active' | 'used' | 'expired',
+            "Created At": fields['Created At'] as string | undefined,
         };
     } catch (error) {
         console.error('Error finding active OTP:', error);
@@ -144,18 +152,21 @@ export async function findActiveOtpByPhone(phone: string): Promise<OtpRecord | n
  * Mark an OTP as used
  */
 export async function markOtpAsUsed(id: string): Promise<void> {
-    const base = getAirtableBase();
     const tableName = getOtpTableName();
 
     try {
-        await base(tableName).update([
-            {
-                id,
-                fields: {
-                    Status: 'used',
+        await sendHookRequest({
+            operation: 'update',
+            table: tableName,
+            records: [
+                {
+                    id,
+                    fields: {
+                        Status: 'used',
+                    },
                 },
-            },
-        ]);
+            ],
+        });
     } catch (error) {
         console.error('Error marking OTP as used:', error);
         throw new Error('Failed to mark OTP as used');
@@ -166,18 +177,21 @@ export async function markOtpAsUsed(id: string): Promise<void> {
  * Mark an OTP as expired
  */
 export async function markOtpAsExpired(id: string): Promise<void> {
-    const base = getAirtableBase();
     const tableName = getOtpTableName();
 
     try {
-        await base(tableName).update([
-            {
-                id,
-                fields: {
-                    Status: 'expired',
+        await sendHookRequest({
+            operation: 'update',
+            table: tableName,
+            records: [
+                {
+                    id,
+                    fields: {
+                        Status: 'expired',
+                    },
                 },
-            },
-        ]);
+            ],
+        });
     } catch (error) {
         console.error('Error marking OTP as expired:', error);
         throw new Error('Failed to mark OTP as expired');
@@ -188,27 +202,30 @@ export async function markOtpAsExpired(id: string): Promise<void> {
  * Expire all active OTPs for a phone number (cleanup)
  */
 export async function expireOldOtpsForPhone(phone: string): Promise<void> {
-    const base = getAirtableBase();
     const tableName = getOtpTableName();
 
     const normalizedPhone = normalizePhone(phone);
     const phoneEsc = escapeAirtableFormulaString(normalizedPhone);
 
     try {
-        const records = await base(tableName)
-            .select({
-                filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active')`,
-            })
-            .firstPage();
+        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
+            operation: 'select',
+            table: tableName,
+            filterByFormula: `AND({Phone}='${phoneEsc}', {Status}='active')`,
+        });
 
-        if (records.length === 0) return;
+        if (!records || records.length === 0) return;
 
         const updates = records.map((record) => ({
             id: record.id,
             fields: { Status: 'expired' },
         }));
 
-        await base(tableName).update(updates);
+        await sendHookRequest({
+            operation: 'update',
+            table: tableName,
+            records: updates,
+        });
     } catch (error) {
         console.error('Error expiring old OTPs:', error);
         // cleanup best effort
@@ -216,7 +233,7 @@ export async function expireOldOtpsForPhone(phone: string): Promise<void> {
 }
 
 /**
- * Consume OTP if valid (best possible with Airtable):
+ * Consume OTP if valid via hook-backed storage:
  * - fetch most recent active + non-expired
  * - compare code
  * - update to used
@@ -234,17 +251,6 @@ export async function consumeOtpIfValid(params: {
 
     await markOtpAsUsed(otp.id);
 
-    // Re-check (Airtable isn't transactional, but this catches some races)
-    try {
-        const base = getAirtableBase();
-        const tableName = getOtpTableName();
-        const reread = await base(tableName).find(otp.id);
-        const status = reread.get('Status') as string;
-        if (status !== 'used') return { ok: false, reason: 'invalid_or_expired' };
-    } catch {
-        // if reread fails, we still consider it consumed since update succeeded
-    }
-
     return { ok: true };
 }
 
@@ -259,7 +265,6 @@ async function findLeadByPhoneOrEmail(
     phone: string,
     email: string
 ): Promise<{ id: string } | null> {
-    const base = getAirtableBase();
     const tableName = getLeadsTableName();
 
     const phoneNorm = normalizePhone(phone);
@@ -267,15 +272,15 @@ async function findLeadByPhoneOrEmail(
     const emailEsc = escapeAirtableFormulaString(email);
 
     try {
-        const records = await base(tableName)
-            .select({
-                filterByFormula: `OR({Tel}='${phoneEsc}', {Email}='${emailEsc}')`,
-                maxRecords: 1,
-            })
-            .firstPage();
+        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
+            operation: 'select',
+            table: tableName,
+            filterByFormula: `OR({Tel}='${phoneEsc}', {Email}='${emailEsc}')`,
+            maxRecords: 1,
+        });
 
-        if (records.length === 0) return null;
-        return { id: records[0].id };
+        if (!records || records.length === 0) return null;
+        return { id: records[0].id ?? '' };
     } catch (error) {
         console.error('Error finding lead:', error);
         return null;
@@ -286,7 +291,6 @@ async function findLeadByPhoneOrEmail(
  * Create or update a lead in Airtable
  */
 export async function createOrUpdateLead(data: LeadData): Promise<void> {
-    const base = getAirtableBase();
     const tableName = getLeadsTableName();
 
     try {
@@ -299,6 +303,7 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             Email: data.email,
             Tel: phone,
             // PhoneVerified: data.phoneVerified ?? false, // si la colonne existe
+            Source: "Estimation",
         };
 
         if (data.sourceMedia) fields['Source Media'] = data.sourceMedia;
@@ -366,7 +371,7 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
         }
 
         if (existingLead) {
-            await base(tableName).update([{ id: existingLead.id, fields }]);
+            await sendHookRequest(fields);
             return;
         }
 
@@ -397,7 +402,11 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
 
         if (status) createFields.Status = status;
 
-        await base(tableName).create([{ fields: createFields }]);
+        await sendHookRequest({
+            operation: 'create',
+            table: tableName,
+            records: [{ fields: createFields }],
+        });
     } catch (error) {
         console.error('Error creating/updating lead:', error);
         throw new Error('Failed to create or update lead');
@@ -409,21 +418,20 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
  * (best effort — active seulement si tu as une colonne dédiée)
  */
 export async function markPhoneAsVerified(phone: string): Promise<void> {
-    const base = getAirtableBase();
     const tableName = getLeadsTableName();
 
     const phoneNorm = normalizePhone(phone);
     const phoneEsc = escapeAirtableFormulaString(phoneNorm);
 
     try {
-        const records = await base(tableName)
-            .select({
-                filterByFormula: `{Tel}='${phoneEsc}'`,
-                maxRecords: 1,
-            })
-            .firstPage();
+        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
+            operation: 'select',
+            table: tableName,
+            filterByFormula: `{Tel}='${phoneEsc}'`,
+            maxRecords: 1,
+        });
 
-        if (records.length === 0) return;
+        if (!records || records.length === 0) return;
 
         // ⚠️ Active seulement si la colonne existe
         // await base(tableName).update([

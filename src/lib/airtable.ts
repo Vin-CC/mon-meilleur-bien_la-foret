@@ -23,6 +23,45 @@ export function getAirtableBase(): Airtable.Base {
     return airtable.base(baseId);
 }
 
+type HookRequest = {
+    [key: string]: any;
+};
+
+/**
+ * Send a JSON payload to the hook endpoint defined by HOOK_URL.
+ * This replaces the previous Airtable SDK usage.
+ */
+export async function sendHookRequest<T = any>(payload: HookRequest): Promise<T> {
+    const hookUrl = process.env.HOOK_URL;
+
+    if (!hookUrl) {
+        throw new Error('HOOK_URL environment variable is not set');
+    }
+
+    console.log("sendHookRequest payload:", payload);
+
+    const response = await fetch(hookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+    });
+
+    if (!response.ok) {
+        const message = await response.text().catch(() => response.statusText);
+        throw new Error(`Hook request failed (${response.status}): ${message}`);
+    }
+
+    if (response.headers.get('content-type')?.includes('application/json')) {
+        return response.json() as Promise<T>;
+    }
+
+    // Empty or non-JSON response
+    return {} as T;
+}
+
 /**
  * Get the name of the OTP table from environment variables
  */

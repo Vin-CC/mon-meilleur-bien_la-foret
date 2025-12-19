@@ -16,7 +16,7 @@ export async function GET() {
 
         return NextResponse.json(leadsTable);
     } catch (error) {
-        console.error('Error fetching Airtable schema:', error);
+        console.error('Error fetching schema from hook:', error);
         return NextResponse.json(
             { error: 'Failed to fetch schema' },
             { status: 500 }

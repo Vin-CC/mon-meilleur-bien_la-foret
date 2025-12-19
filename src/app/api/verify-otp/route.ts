@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findActiveOtpByPhone, markOtpAsUsed, markPhoneAsVerified } from '@/lib/airtable-otp';
+import { createOrUpdateLead, type LeadData } from '@/lib/airtable-otp';
 import { checkVerificationCode } from '@/lib/sms';
 
 interface VerifyOtpRequest {
     phone: string;
     code: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    estimationData?: LeadData['estimationData'];
+    sourceMedia?: string;
+    sourceUtm?: string;
 }
 
 /**
@@ -60,6 +66,7 @@ export async function POST(request: NextRequest) {
 
         const phone = normalizePhone(typeof body.phone === 'string' ? body.phone : '');
         const code = typeof body.code === 'string' ? body.code.trim() : '';
+        const { firstName, lastName, email, estimationData, sourceMedia, sourceUtm } = body;
 
         // Validate required fields
         if (!phone || !code) {
@@ -88,9 +95,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Optionally re-read active OTP to mark it as used for audit
-        const otpRecord = await findActiveOtpByPhone(phone);
-
         // Vérification via Twilio Verify (client.verify.v2.services)
         try {
             const verification = await checkVerificationCode(phone, code);
@@ -100,24 +104,28 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: genericError }, { status: 400 });
             }
 
-            if (otpRecord) {
-                try {
-                    await markOtpAsUsed(otpRecord.id);
-                } catch (e) {
-                    console.error('Error marking OTP as used:', e);
-                }
-            }
         } catch (verificationError) {
             console.error('Twilio verification failed:', verificationError);
             return NextResponse.json({ error: genericError }, { status: 400 });
         }
 
-        // Marquer le téléphone comme vérifié (best effort)
-        try {
-            await markPhoneAsVerified(phone);
-        } catch (e) {
-            console.error('Error marking phone as verified:', e);
-            // ne pas faire échouer : OTP déjà validé
+        // Créer / mettre à jour le lead uniquement après la validation du numéro
+        if (firstName && email) {
+            try {
+                await createOrUpdateLead({
+                    firstName,
+                    lastName: lastName || '',
+                    email,
+                    phone,
+                    phoneVerified: true,
+                    estimationData,
+                    sourceMedia,
+                    sourceUtm,
+                });
+            } catch (leadError) {
+                console.error('Error creating/updating lead after OTP verification:', leadError);
+                // ne pas bloquer la validation de l'OTP
+            }
         }
 
         return NextResponse.json({ ok: true });

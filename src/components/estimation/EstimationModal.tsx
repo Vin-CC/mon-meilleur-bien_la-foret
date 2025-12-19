@@ -892,35 +892,23 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
         </div>
     );
 
+    const getNameParts = () => {
+        const [firstName, ...lastNameParts] = formData.contact.name.split(' ').filter(Boolean);
+        return {
+            firstName: firstName || '',
+            lastName: lastNameParts.join(' ') || '',
+        };
+    };
+
     // OTP API handlers
     const handleSendOtp = async () => {
         setSending(true);
         try {
-            const [firstName, ...lastNameParts] = formData.contact.name.split(' ');
-            const lastName = lastNameParts.join(' ');
-
             const response = await fetch('/api/send-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: formData.contact.phone,
-                    firstName: firstName || '',
-                    lastName: lastName || '',
-                    email: formData.contact.email,
-                    estimationData: {
-                        propertyType: formData.propertyType,
-                        address: formData.address,
-                        surface: formData.surface,
-                        rooms: formData.rooms,
-                        bedrooms: formData.bedrooms,
-                        condition: formData.condition,
-                        floor: formData.floor,
-                        exterior: formData.exterior,
-                        constructionYear: formData.constructionYear,
-                        isOwner: formData.isOwner,
-                        estimationReason: formData.estimationReason,
-                        projectTimeline: formData.projectTimeline,
-                    },
                 }),
             });
 
@@ -945,12 +933,31 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     const handleVerifyOtp = async () => {
         setVerifying(true);
         try {
+            const { firstName, lastName } = getNameParts();
+
             const response = await fetch('/api/verify-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     phone: formData.contact.phone,
                     code: otpCode,
+                    firstName,
+                    lastName,
+                    email: formData.contact.email,
+                    estimationData: {
+                        propertyType: formData.propertyType,
+                        address: formData.address,
+                        surface: formData.surface,
+                        rooms: formData.rooms,
+                        bedrooms: formData.bedrooms,
+                        condition: formData.condition,
+                        floor: formData.floor,
+                        exterior: formData.exterior,
+                        constructionYear: formData.constructionYear,
+                        isOwner: formData.isOwner,
+                        estimationReason: formData.estimationReason,
+                        projectTimeline: formData.projectTimeline,
+                    },
                 }),
             });
 
