@@ -11,7 +11,7 @@ export function Header() {
                     <div className="flex items-center">
                         <Link href="/">
                             <Image
-                                src="/logo.png"
+                                src="/logo-laforet.svg"
                                 alt="MonMeilleurBien.fr"
                                 className="h-14 w-auto"
                                 width={180}

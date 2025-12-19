@@ -179,7 +179,7 @@ export function Features() {
                                                     alt={`Estimation ${est.type} ${est.city}`}
                                                     src={est.image}
                                                     fill
-                                                    className="object-cover"
+                                                    className="object-contain"
                                                     sizes="(max-width: 640px) 75vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw"
                                                 />
                                                 <div className="bg-primary/20 border-primary/50 absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border"></div>

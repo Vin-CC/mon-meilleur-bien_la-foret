@@ -8,14 +8,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-lexend);
   --font-mono: var(--font-geist-mono);
 
-  --color-brand-blue: #022b60;
-  --color-brand-green: #18cd75;
-  --color-brand-dark: #0B2341;
-  --color-gold: #E6A502;
-  --color-blue-dark: #1e293b;
+  --color-brand-blue: #143d8a;
+  --color-brand-green: #00acff;
+  --color-brand-dark: #0f2f6b;
+  --color-gold: #01acff;
+  --color-blue-dark: #102a5c;
   /* slate-800 */
 
   /* Mappings for copied components */
@@ -96,7 +96,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  font-family: var(--font-lexend), "Lexend", Arial, Helvetica, sans-serif;
 }
 
 .no-scrollbar::-webkit-scrollbar {

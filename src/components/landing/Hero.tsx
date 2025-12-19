@@ -27,13 +27,13 @@ export function Hero() {
                             <svg viewBox="0 0 800 600" className="w-full h-full">
                                 <defs>
                                     <linearGradient id="flow1" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#18cd75"></stop>
-                                        <stop offset="50%" stopColor="#022b60"></stop>
-                                        <stop offset="100%" stopColor="#022b60"></stop>
+                                        <stop offset="0%" stopColor="#00acff"></stop>
+                                        <stop offset="50%" stopColor="#143d8a"></stop>
+                                        <stop offset="100%" stopColor="#143d8a"></stop>
                                     </linearGradient>
                                     <linearGradient id="flow2" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#18cd75"></stop>
-                                        <stop offset="100%" stopColor="#18cd75"></stop>
+                                        <stop offset="0%" stopColor="#00acff"></stop>
+                                        <stop offset="100%" stopColor="#00acff"></stop>
                                     </linearGradient>
                                 </defs>
                                 <path

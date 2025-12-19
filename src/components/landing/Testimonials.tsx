@@ -42,7 +42,7 @@ export function Testimonials() {
                     <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
                         <div className="flex items-center mb-4">
                             <img
-                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80"
                                 alt="Pierre Martin"
                                 className="w-12 h-12 rounded-full mr-4"
                             />
@@ -66,7 +66,7 @@ export function Testimonials() {
                     <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
                         <div className="flex items-center mb-4">
                             <img
-                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&h=150&q=80"
                                 alt="Sophie Bernard"
                                 className="w-12 h-12 rounded-full mr-4"
                             />

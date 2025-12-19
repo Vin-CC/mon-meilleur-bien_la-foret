@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Lexend } from "next/font/google";
 import { Toaster } from "sonner";
 import Script from "next/script";
 import "./globals.css";
 
-const inter = Inter({
+const lexend = Lexend({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-lexend",
   display: "swap",
 });
 
@@ -55,7 +55,7 @@ export default function RootLayout({
           strategy="lazyOnload"
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${lexend.variable} font-sans antialiased`}>
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-PJ3RJKHC"

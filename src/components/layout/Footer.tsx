@@ -8,7 +8,7 @@ export function Footer() {
                     <div>
                         <div className="flex items-center mb-4">
                             <img
-                                src="/logo texte fond bleu.png"
+                                src="/logo-laforet.svg"
                                 alt="MonMeilleurBien.fr"
                                 className="h-12"
                             />
