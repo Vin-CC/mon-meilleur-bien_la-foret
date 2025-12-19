@@ -1,4 +1,5 @@
 import { sendHookRequest } from './airtable';
+import { extractCityFromAddress } from './address';
 
 // ============================================================================
 // Types
@@ -21,20 +22,20 @@ export interface LeadData {
     phoneVerified?: boolean;
     sourceMedia?: string;
     sourceUtm?: string;
-        estimationData?: {
-            propertyType?: string;
-            address?: string;
-            surface?: string;
-            rooms?: number;
-            bedrooms?: number;
-            condition?: string;
-            floor?: number;
-            exterior?: string[];
-            constructionYear?: string;
-            isOwner?: string;
-            estimationReason?: string;
-            projectTimeline?: string;
-        };
+    estimationData?: {
+        propertyType?: string;
+        address?: string;
+        surface?: string;
+        rooms?: number;
+        bedrooms?: number;
+        condition?: string;
+        floor?: number;
+        exterior?: string[];
+        constructionYear?: string;
+        isOwner?: string;
+        estimationReason?: string;
+        projectTimeline?: string;
+    };
 }
 
 interface HookRecord {
@@ -103,6 +104,8 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             }
             if (data.estimationData.address) {
                 fields['Adresse complète du Bien'] = data.estimationData.address;
+                const city = extractCityFromAddress(data.estimationData.address);
+                if (city) fields['Ville'] = city;
             }
             if (data.estimationData.surface) {
                 fields['Superficie'] = data.estimationData.surface;

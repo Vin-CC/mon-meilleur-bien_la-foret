@@ -124,12 +124,8 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     useEffect(() => {
         if (defaultAddress) {
             setAddress(defaultAddress);
-            // If we have a valid address and we're on step 2, skip to step 3
-            if (defaultAddress.length > 5 && step === 2) {
-                setStep(3);
-            }
         }
-    }, [defaultAddress, step, setAddress]);
+    }, [defaultAddress, setAddress]);
 
     // Reset modal content when closed
     useEffect(() => {

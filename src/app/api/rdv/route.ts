@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendHookRequest } from "@/lib/airtable";
+import { extractCityFromAddress } from "@/lib/address";
 
 interface AppointmentPayload {
     address: string;
@@ -44,6 +45,9 @@ export async function POST(request: NextRequest) {
             // Détails: JSON.stringify(body),
             Source: "RDV",
         };
+
+        const city = extractCityFromAddress(address);
+        if (city) fields["Ville"] = city;
 
         // Remove undefined to avoid Airtable errors
         Object.keys(fields).forEach((key) => {

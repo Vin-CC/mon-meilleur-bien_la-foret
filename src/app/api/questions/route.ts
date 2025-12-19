@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendHookRequest } from "@/lib/airtable";
+import { extractCityFromAddress } from "@/lib/address";
 
 interface QuestionPayload {
     nom: string;
@@ -7,12 +8,14 @@ interface QuestionPayload {
     email: string;
     telephone: string;
     message: string;
+    address?: string;
+    adresse?: string;
 }
 
 export async function POST(request: NextRequest) {
     try {
         const body: QuestionPayload = await request.json();
-        const { nom, prenom, email, telephone, message } = body;
+        const { nom, prenom, email, telephone, message, address, adresse } = body;
 
         if (!nom || !prenom || !email || !telephone || !message) {
             return NextResponse.json(
@@ -28,6 +31,9 @@ export async function POST(request: NextRequest) {
             "Les Besoins": message,
             Source: "Formulaire",
         };
+
+        const city = extractCityFromAddress(address || adresse);
+        if (city) fields["Ville"] = city;
 
         await sendHookRequest(fields);
 
