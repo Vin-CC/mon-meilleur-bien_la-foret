@@ -1,4 +1,4 @@
-import { getLeadsTableName, sendHookRequest } from './airtable';
+import { sendHookRequest } from './airtable';
 
 // ============================================================================
 // Types
@@ -21,19 +21,20 @@ export interface LeadData {
     phoneVerified?: boolean;
     sourceMedia?: string;
     sourceUtm?: string;
-    estimationData?: {
-        propertyType?: string;
-        address?: string;
-        surface?: string;
-        rooms?: number;
-        bedrooms?: number;
-        condition?: string;
-        floor?: number;
-        exterior?: string[];
-        constructionYear?: string;
-        isOwner?: string;
-        projectTimeline?: string;
-    };
+        estimationData?: {
+            propertyType?: string;
+            address?: string;
+            surface?: string;
+            rooms?: number;
+            bedrooms?: number;
+            condition?: string;
+            floor?: number;
+            exterior?: string[];
+            constructionYear?: string;
+            isOwner?: string;
+            estimationReason?: string;
+            projectTimeline?: string;
+        };
 }
 
 interface HookRecord {
@@ -72,44 +73,11 @@ export function normalizePhone(input: string): string {
 // ============================================================================
 
 /**
- * Find a lead by phone or email
- */
-async function findLeadByPhoneOrEmail(
-    phone: string,
-    email: string
-): Promise<{ id: string } | null> {
-    const tableName = getLeadsTableName();
-
-    const phoneNorm = normalizePhone(phone);
-    const phoneEsc = escapeAirtableFormulaString(phoneNorm);
-    const emailEsc = escapeAirtableFormulaString(email);
-
-    try {
-        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
-            operation: 'select',
-            table: tableName,
-            filterByFormula: `OR({Tel}='${phoneEsc}', {Email}='${emailEsc}')`,
-            maxRecords: 1,
-        });
-
-        if (!records || records.length === 0) return null;
-        return { id: records[0].id ?? '' };
-    } catch (error) {
-        console.error('Error finding lead:', error);
-        return null;
-    }
-}
-
-/**
  * Create or update a lead in Airtable
  */
 export async function createOrUpdateLead(data: LeadData): Promise<void> {
-    const tableName = getLeadsTableName();
-
     try {
         const phone = normalizePhone(data.phone);
-
-        const existingLead = await findLeadByPhoneOrEmail(phone, data.email);
 
         const fields: Record<string, any> = {
             'Nom & Prénom': `${data.firstName} ${data.lastName}`.trim(),
@@ -139,6 +107,12 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             if (data.estimationData.surface) {
                 fields['Superficie'] = data.estimationData.surface;
             }
+            if (typeof data.estimationData.rooms === 'number') {
+                fields['Nombre de pièces'] = data.estimationData.rooms;
+            }
+            if (typeof data.estimationData.bedrooms === 'number') {
+                fields['Nombre de chambres'] = data.estimationData.bedrooms;
+            }
             if (data.estimationData.condition) {
                 // Map condition to Airtable format
                 const conditionMap: Record<string, string> = {
@@ -148,6 +122,9 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
                     'renovation': 'À rénover'
                 };
                 fields['Etats du Bien'] = conditionMap[data.estimationData.condition] || data.estimationData.condition;
+            }
+            if (typeof data.estimationData.floor === 'number') {
+                fields['Étage'] = data.estimationData.floor;
             }
             if (data.estimationData.exterior?.length) {
                 const validExterior = data.estimationData.exterior.filter((e) => e && e.trim() !== '');
@@ -170,6 +147,17 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
                 };
                 fields['Propriétaires '] = ownerMap[data.estimationData.isOwner] || data.estimationData.isOwner; // oui, avec espace
             }
+            if (data.estimationData.constructionYear) {
+                fields['Année de construction'] = data.estimationData.constructionYear;
+            }
+            if (data.estimationData.estimationReason) {
+                const reasonMap: Record<string, string> = {
+                    'vente': 'Vente',
+                    'curiosite': 'Curiosité',
+                };
+                fields['Motif estimation'] =
+                    reasonMap[data.estimationData.estimationReason] || data.estimationData.estimationReason;
+            }
             if (data.estimationData.projectTimeline) {
                 // Map timeline
                 const timelineMap: Record<string, string> = {
@@ -183,77 +171,14 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             }
         }
 
-        if (existingLead) {
-            await sendHookRequest(fields);
-            return;
-        }
-
-        // Create new lead
-        let status: string | undefined;
-
-        try {
-            const { listTables } = await import('./airtable-admin');
-            const tables = await listTables();
-            const leadsTable = tables.find((t) => t.name === tableName);
-            const statusField = leadsTable?.fields?.find((f) => f.name === 'Status');
-
-            const choices = statusField?.options?.choices;
-            if (choices?.length) {
-                const target = choices.find(
-                    (c) => c.name.toLowerCase() === 'nouveau' || c.name.toLowerCase() === 'new'
-                );
-                status = (target ?? choices[0]).name;
-            }
-        } catch (schemaError) {
-            console.warn('Failed to fetch schema for Status field, using default:', schemaError);
-        }
-
         const createFields: Record<string, any> = {
             ...fields,
             "Date d'arrivée": new Date().toISOString().split('T')[0],
         };
 
-        if (status) createFields.Status = status;
-
-        await sendHookRequest({
-            operation: 'create',
-            table: tableName,
-            records: [{ fields: createFields }],
-        });
+        await sendHookRequest(createFields);
     } catch (error) {
         console.error('Error creating/updating lead:', error);
         throw new Error('Failed to create or update lead');
-    }
-}
-
-/**
- * Mark a phone number as verified for a lead
- * (best effort — active seulement si tu as une colonne dédiée)
- */
-export async function markPhoneAsVerified(phone: string): Promise<void> {
-    const tableName = getLeadsTableName();
-
-    const phoneNorm = normalizePhone(phone);
-    const phoneEsc = escapeAirtableFormulaString(phoneNorm);
-
-    try {
-        const { records } = await sendHookRequest<{ records?: HookRecord[] }>({
-            operation: 'select',
-            table: tableName,
-            filterByFormula: `{Tel}='${phoneEsc}'`,
-            maxRecords: 1,
-        });
-
-        if (!records || records.length === 0) return;
-
-        // ⚠️ Active seulement si la colonne existe
-        // await base(tableName).update([
-        //   { id: records[0].id, fields: { PhoneVerified: true } },
-        // ]);
-
-        console.log(`Phone verified for ${phoneNorm} (no column updated)`);
-    } catch (error) {
-        console.error('Error marking phone as verified:', error);
-        throw new Error('Failed to mark phone as verified');
     }
 }
