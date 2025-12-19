@@ -1,4 +1,4 @@
-import { getAirtableBase, getOtpTableName, getLeadsTableName } from './airtable';
+import { getAirtableBase, getLeadsTableName } from './airtable';
 
 export interface AirtableField {
     id: string;
@@ -69,43 +69,7 @@ export async function listTables(): Promise<AirtableTable[]> {
     } catch (error) {
         console.error('Error fetching tables from Metadata API:', error);
     }
-
-    // Fallback to known tables with hardcoded fields
-    return [
-        {
-            name: getOtpTableName(),
-            description: 'One-Time Passwords',
-            fields: [
-                { id: 'fldPhone', name: 'Phone', type: 'phoneNumber' },
-                { id: 'fldCode', name: 'Code', type: 'singleLineText' },
-                { id: 'fldExpiresAt', name: 'ExpiresAt', type: 'dateTime' },
-                { id: 'fldStatus', name: 'Status', type: 'singleSelect' },
-                { id: 'fldCreatedAt', name: 'Created At', type: 'dateTime' }
-            ]
-        },
-        {
-            name: getLeadsTableName(),
-            description: 'Leads and Estimations',
-            fields: [
-                { id: 'fldFirstName', name: 'FirstName', type: 'singleLineText' },
-                { id: 'fldLastName', name: 'LastName', type: 'singleLineText' },
-                { id: 'fldEmail', name: 'Email', type: 'email' },
-                { id: 'fldPhone', name: 'Phone', type: 'phoneNumber' },
-                { id: 'fldPhoneVerified', name: 'PhoneVerified', type: 'checkbox' },
-                { id: 'fldPropertyType', name: 'PropertyType', type: 'singleSelect' },
-                { id: 'fldAddress', name: 'Address', type: 'singleLineText' },
-                { id: 'fldSurface', name: 'Surface', type: 'number' },
-                { id: 'fldRooms', name: 'Rooms', type: 'number' },
-                { id: 'fldBedrooms', name: 'Bedrooms', type: 'number' },
-                { id: 'fldCondition', name: 'Condition', type: 'singleSelect' },
-                { id: 'fldFloor', name: 'Floor', type: 'number' },
-                { id: 'fldExterior', name: 'Exterior', type: 'multiselect' },
-                { id: 'fldConstructionYear', name: 'ConstructionYear', type: 'singleLineText' },
-                { id: 'fldIsOwner', name: 'IsOwner', type: 'singleSelect' },
-                { id: 'fldProjectTimeline', name: 'ProjectTimeline', type: 'singleSelect' }
-            ]
-        },
-    ];
+    return [];
 }
 
 /**
