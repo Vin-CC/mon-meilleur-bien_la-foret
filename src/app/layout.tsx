@@ -11,9 +11,9 @@ const lexend = Lexend({
 });
 
 export const metadata: Metadata = {
-  title: "Estimation Immobilière Gratuite | Expertise Immobilier Premium",
+  title: "Agence immobilière Sucy-en-Brie Val-de-Marne | Laforêt Sucy-en-Brie ⇔ Laforêt Immobilier",
   description:
-    "Estimez gratuitement votre bien immobilier en 2 minutes. Expertise fiable et précise par nos experts certifiés.",
+    "L'agence immobilière Laforêt Sucy-en-Brie vous accompagne pour trouver le bien immobilier en Achat, Vente, Location sur Sucy-en-Brie. Estimation gratuite ✅",
   authors: [{ name: "Expertise Immobilier Premium" }],
   openGraph: {
     title: "Estimation Immobilière Gratuite en 2 minutes",
