@@ -7,7 +7,6 @@ import { RecentEstimations } from "@/components/landing/RecentEstimations";
 import { MarketData } from "@/components/landing/MarketData";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Testimonials } from "@/components/landing/Testimonials";
-import { Partners } from "@/components/landing/Partners";
 import { FAQ } from "@/components/landing/FAQ";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/layout/Footer";
@@ -25,7 +24,6 @@ export default function Home() {
         <RecentEstimations />
         {/* <Features /> */}
         <Testimonials />
-        <Partners />
         <FAQ />
         <Contact />
       </main>
