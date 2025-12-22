@@ -4,12 +4,12 @@ export function Footer() {
     return (
         <footer className="bg-gradient-to-r from-brand-blue to-brand-dark text-white py-12">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <div className="flex items-center mb-4">
                             <img
                                 src="/logo-laforet.svg"
-                                alt="MonMeilleurBien.fr"
+                                alt="Laforêt"
                                 className="h-12"
                             />
                         </div>
@@ -23,63 +23,20 @@ export function Footer() {
                         </div>
                     </div>
                     <div>
-                        <h4 className="font-semibold mb-4">Services</h4>
                         <ul className="space-y-2 text-gray-300">
                             <li>
-                                <a href="#" className="hover:text-white transition-colors">
-                                    Estimation gratuite
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-white transition-colors">
-                                    Vente immobilière
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-white transition-colors">
-                                    Expertise en ligne
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-white transition-colors">
-                                    Accompagnement personnalisé
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold mb-4">Informations légales</h4>
-                        <ul className="space-y-2 text-gray-300">
-                            <li>
-                                <a
-                                    href="/mentions-legales"
-                                    className="hover:text-white transition-colors"
-                                >
+                                <a href="/mentions-legales" className="hover:text-white transition-colors">
                                     Mentions légales
                                 </a>
                             </li>
                             <li>
-                                <a
-                                    href="/politique-de-confidentialite"
-                                    className="hover:text-white transition-colors"
-                                >
-                                    Politique de confidentialité
+                                <a href="/cookies" className="hover:text-white transition-colors">
+                                    Cookies
                                 </a>
                             </li>
                             <li>
-                                <a
-                                    href="/rgpd"
-                                    className="hover:text-white transition-colors"
-                                >
-                                    RGPD
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="/cgu"
-                                    className="hover:text-white transition-colors"
-                                >
-                                    CGU
+                                <a href="/donnees-personnelles" className="hover:text-white transition-colors">
+                                    Données personnelles
                                 </a>
                             </li>
                         </ul>
