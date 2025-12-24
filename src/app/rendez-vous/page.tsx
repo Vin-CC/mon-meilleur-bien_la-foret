@@ -17,11 +17,9 @@ export default function AppointmentPage() {
     return (
         <div className="min-h-screen bg-white flex flex-col">
             {/* Progress Bar */}
-            <div className="w-full h-1 bg-gray-200">
+            {/* <div className="w-full h-1 bg-gray-200">
                 <div className="h-full bg-gradient-to-r from-green-600 to-green-400" style={{ width: '33%' }}></div>
-            </div>
-
-            <Header />
+            </div> */}
 
             <main className="flex-1 w-full">
                 <div className="max-w-[1200px] mx-auto px-6 py-12">
