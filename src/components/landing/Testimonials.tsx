@@ -1,24 +1,35 @@
 import { ArrowRight } from "lucide-react";
 import { EstimationModal } from "@/components/estimation/EstimationModal";
 
-const testimonials = [
+interface ITestimonial {
+    name: string;
+    avatar?: React.ReactNode;
+    img?: string;
+    comment: string;
+}
+
+const testimonials: ITestimonial[] = [
     {
-        name: "Carmen Pleissinger",
-        img: "https://lh3.googleusercontent.com/a/ACg8ocJHeusIGW1Wsk_M4FE_171tx0dA_rcUWBr00CprAx_i_u3vHA=s64-c-rp-mo-br100",
-        comment: "Nous avons enfin trouvé l'appartement de nos rêves grace à Laetitia. Toujours souriante, à l'écoute et disponible. Un grand professionnalisme !"
+        name: "Ruth Moi",
+        // img: "https://lh3.googleusercontent.com/a/ACg8ocJHeusIGW1Wsk_M4FE_171tx0dA_rcUWBr00CprAx_i_u3vHA=s64-c-rp-mo-br100",
+        avatar: <span className="flex justify-center items-center w-12 h-12 bg-green-500 rounded-full text-2xl text-white">R</span>,
+        comment: "Un grand merci à Mme Farnault directrice de l’agence Laforêt à Sucy-en-Brie pour l’investissement et l’efficacité dont elle a fait preuve lors de la vente de notre maison. Grâce à son professionnalisme sans faille et son excellente connaissance du marché, la transaction a été menée à bien rapidement. Nous avons particulièrement apprécié la communication régulière, l’accompagnement et le suivi de chaque étape. Une agence dirigée par une professionnelle Mme Farnault digne de confiance."
     },
     {
-        name: "Theo Mbala",
-        img: "/images/avis3.png",
-        comment: "Super accueil, dans cette Agence. J'ai été super bien reçu, on m'a bien guidé et expliqué les choses. Un grand merci à Christelle qui ne nous a pas abandonné dans notre parcours. Je vous recommande cette agence. Bonne continuation à vous !"
+        name: "Denya NGB",
+        // img: "https://lh3.googleusercontent.com/a/ACg8ocJHeusIGW1Wsk_M4FE_171tx0dA_rcUWBr00CprAx_i_u3vHA=s64-c-rp-mo-br100",
+        avatar: <span className="flex justify-center items-center w-12 h-12 bg-blue-500 rounded-full text-2xl text-white">D</span>,
+        comment: `Merci à Christelle et Mme Farnault Laetitia pour leur sympathie, leur efficacité et leur rapidité ! Elles ont fait loué ma maison en moins de 2 mois et , au prix que je souhaitais. Je n’ai eu à m’occuper de rien puisque l’agence s’occupe de la gestion . C’était très confortable et mené d’une main de maître !
+Je vous recommande chaleureusement l’agence,
+Merci encore ,
+Et bonne continuation`
     },
     {
-        name: "Chaimaa Emziane",
-        img: "https://lh3.googleusercontent.com/a/ACg8ocIYw67IJ1SZNGl1m-9QgTuH4mdiqfQ4NTwkbEMjABt_qMv3rg=s64-c-rp-mo-br100",
+        name: "Adeline Gouraud",
+        // img: "https://lh3.googleusercontent.com/a/ACg8ocIYw67IJ1SZNGl1m-9QgTuH4mdiqfQ4NTwkbEMjABt_qMv3rg=s64-c-rp-mo-br100",
+        avatar: <span className="flex justify-center items-center w-12 h-12 bg-purple-800 rounded-full text-2xl text-white">A</span>,
         comment: `
-        Je remercie Daliah pour son professionnalisme et son accompagnement exceptionnel dans la réalisation de l'estimation de mon bien immobilier. Elle a fait preuve d'une grande expertise et a su me donner des conseils clairs et pertinents tout au long du processus.
-Sa disponibilité, son écoute et son souci du détail m'ont vraiment rassuré et inspiré confiance. Grâce à son travail précis, j'ai obtenu une estimation juste et en adéquation avec le marché actuel.
-Je recommande vivement Daliah pour toute personne cherchant un service de qualité dans le domaine de l'immobilier. Merci encore !`
+        J'ai contacté l'agence pour un avis de valeur locatif et échangé avec M. Farnault que je remercie pour sa réactivité et son professionnalisme.`
     }
 ]
 
@@ -39,12 +50,12 @@ export function Testimonials() {
                     {
                         testimonials.map(t => (
                             <div className="rounded-lg text-card-foreground p-6 bg-white shadow-lg hover:shadow-xl transition-shadow animate-fade-in">
-                                <div className="flex items-center mb-4">
-                                    <img
+                                <div className="flex items-center mb-4 gap-4">
+                                    {t.img ? <img
                                         src={t.img}
                                         alt={t.name}
-                                        className="w-12 h-12 rounded-full mr-4"
-                                    />
+                                        className="w-12 h-12 rounded-full"
+                                    /> : t.avatar}
                                     <div>
                                         <h4 className="font-semibold">{t.name}</h4>
                                     </div>
