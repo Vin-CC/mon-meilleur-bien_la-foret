@@ -170,11 +170,10 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
             if (data.estimationData.projectTimeline) {
                 // Map timeline
                 const timelineMap: Record<string, string> = {
-                    '3-mois': 'De 3 Mois',
+                    '3-mois': 'Moins de 3 Mois',
                     '3-6-mois': 'Entre 3 et 6 Mois',
                     '6-12-mois': 'Entre 6 et 12 Mois',
-                    '+12-mois': 'Plus de 12 Mois',
-                    'curiosite': 'Juste Curiosité'
+                    '+12-mois': 'Plus de 12 Mois'
                 };
                 fields['Délai de vente'] = timelineMap[data.estimationData.projectTimeline] || data.estimationData.projectTimeline;
             }

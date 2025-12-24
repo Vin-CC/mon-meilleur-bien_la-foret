@@ -802,15 +802,13 @@ export function EstimationModal({ children, defaultAddress = "" }: EstimationMod
     const getTimelineLabel = (name: string) => {
         const lowerName = name.toLowerCase();
         if (lowerName.includes('3 mois') && !lowerName.includes('6')) {
-            return "De 3 Mois";
+            return "Moins de 3 Mois";
         } else if (lowerName.includes('3') && lowerName.includes('6')) {
             return "Entre 3 et 6 Mois";
         } else if (lowerName.includes('6') && lowerName.includes('12')) {
             return "Entre 6 et 12 Mois";
         } else if (lowerName.includes('12') && (lowerName.includes('plus') || lowerName.includes('>'))) {
             return "Plus de 12 Mois";
-        } else if (lowerName.includes('curiosité') || lowerName.includes('curiosite')) {
-            return "Juste Curiosité";
         } else {
             return name; // Fallback to the option name itself
         }

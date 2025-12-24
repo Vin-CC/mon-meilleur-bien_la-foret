@@ -33,7 +33,7 @@ export function AboutUs() {
                                             width="700"
                                             height="500"
                                             className="object-cover object-center"
-                                            src="/images/generated-about-us.png"
+                                            src="/images/team.jpeg"
                                         />
                                     </div>
                                 </div>
