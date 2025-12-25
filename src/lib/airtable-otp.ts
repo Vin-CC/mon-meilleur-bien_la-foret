@@ -168,14 +168,26 @@ export async function createOrUpdateLead(data: LeadData): Promise<void> {
                     reasonMap[data.estimationData.estimationReason] || data.estimationData.estimationReason;
             }
             if (data.estimationData.projectTimeline) {
-                // Map timeline
                 const timelineMap: Record<string, string> = {
                     '3-mois': 'Moins de 3 Mois',
                     '3-6-mois': 'Entre 3 et 6 Mois',
                     '6-12-mois': 'Entre 6 et 12 Mois',
-                    '+12-mois': 'Plus de 12 Mois'
+                    '+12-mois': 'Plus de 12 Mois',
                 };
-                fields['Délai de vente'] = timelineMap[data.estimationData.projectTimeline] || data.estimationData.projectTimeline;
+                const rawTimeline = String(data.estimationData.projectTimeline).trim();
+                const normalizedTimeline = rawTimeline.toLowerCase();
+                const timelineValue =
+                    timelineMap[rawTimeline] ||
+                    (normalizedTimeline.includes('3') && normalizedTimeline.includes('6')
+                        ? 'Entre 3 et 6 Mois'
+                        : normalizedTimeline.includes('6') && normalizedTimeline.includes('12')
+                            ? 'Entre 6 et 12 Mois'
+                            : normalizedTimeline.includes('12') && (normalizedTimeline.includes('plus') || normalizedTimeline.includes('>') || normalizedTimeline.includes('+'))
+                                ? 'Plus de 12 Mois'
+                                : normalizedTimeline.includes('3') && (normalizedTimeline.includes('moins') || normalizedTimeline.includes('de 3') || normalizedTimeline.includes('<'))
+                                    ? 'Moins de 3 Mois'
+                                    : rawTimeline);
+                fields['Délai de vente'] = timelineValue;
             }
         }
 
