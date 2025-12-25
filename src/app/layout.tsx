@@ -66,7 +66,7 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           ></iframe>
         </noscript>
-        <div className="min-h-screen bg-white font-inter">
+        <div className="min-h-screen bg-white flex flex-col font-inter">
           <Header />
           {children}
           <Footer />
